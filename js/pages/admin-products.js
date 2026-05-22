@@ -1,6 +1,7 @@
 /* ============================================================
    pages/admin-products.js — add / list / delete products
    (admin-products.html)
+   Supports multiple images + videos per product, plus MRP.
    ============================================================ */
 
 import { CONFIG } from '../config.js';
@@ -17,16 +18,18 @@ import { SHOP_SECTIONS } from '../catalog.js';
   }
 
   const $ = (id) => document.getElementById(id);
-  const MAX_IMAGE_BYTES = 4 * 1024 * 1024; // 4 MB
-  let imageDataUrl = '';
-  let imageName = '';
+  const MAX_IMAGE_BYTES = 4 * 1024 * 1024;   // 4 MB per image
+  const MAX_VIDEO_BYTES = 25 * 1024 * 1024;  // 25 MB per video
+
+  // Selected media before upload: { uid, kind:'image'|'video', dataUrl, name, size }
+  let mediaItems = [];
+  let uidSeq = 0;
 
   const form = $('productForm');
-  const fileInput = $('productImage');
+  const fileInput = $('productMedia');
   const drop = $('imageDrop');
-  const preview = $('imagePreview');
-  const empty = $('imageEmpty');
-  const clearBtn = $('clearImageBtn');
+  const previews = $('mediaPreviews');
+  const clearBtn = $('clearMediaBtn');
   const imageNote = $('imageNote');
   const note = $('productNote');
   const submitBtn = $('submitProduct');
@@ -53,50 +56,98 @@ import { SHOP_SECTIONS } from '../catalog.js';
   populateSections();
   sectionSel.addEventListener('change', () => populateSubCategories(sectionSel.value));
 
-  // ----- Image upload + preview
-  function setImage(file) {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      showToast('Please choose an image file', 'error');
-      return;
-    }
-    if (file.size > MAX_IMAGE_BYTES) {
-      showToast('Image too large (max 4 MB)', 'error');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      imageDataUrl = e.target.result;
-      imageName = file.name;
-      preview.src = imageDataUrl;
-      preview.hidden = false;
-      empty.hidden = true;
-      clearBtn.hidden = false;
-      imageNote.textContent = `${file.name} · ${(file.size / 1024).toFixed(0)} KB`;
+  // ----- Media upload + preview (multiple images & videos)
+  function addFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    files.forEach((file) => {
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      if (!isImage && !isVideo) {
+        showToast(`${file.name}: not an image or video`, 'error');
+        return;
+      }
+      const limit = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+      if (file.size > limit) {
+        showToast(`${file.name} too large (max ${isVideo ? '25' : '4'} MB)`, 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        mediaItems.push({
+          uid: ++uidSeq,
+          kind: isImage ? 'image' : 'video',
+          dataUrl: e.target.result,
+          name: file.name,
+          size: file.size
+        });
+        renderPreviews();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPreviews() {
+    if (!mediaItems.length) {
+      previews.hidden = true;
+      previews.innerHTML = '';
+      clearBtn.hidden = true;
+      imageNote.textContent = '';
       imageNote.className = 'form-note';
-    };
-    reader.readAsDataURL(file);
+      return;
+    }
+    previews.hidden = false;
+    clearBtn.hidden = false;
+    previews.innerHTML = mediaItems.map((m) => {
+      const inner = m.kind === 'image'
+        ? `<img src="${m.dataUrl}" alt="">`
+        : `<video src="${m.dataUrl}" muted playsinline preload="metadata"></video><span class="media-play">&#9658;</span>`;
+      return `
+        <div class="media-tile" data-uid="${m.uid}">
+          ${inner}
+          <span class="media-kind">${m.kind === 'video' ? 'Video' : 'Image'}</span>
+          <button type="button" class="media-remove" data-uid="${m.uid}" aria-label="Remove">&times;</button>
+        </div>`;
+    }).join('');
+
+    const imgs = mediaItems.filter(m => m.kind === 'image').length;
+    const vids = mediaItems.filter(m => m.kind === 'video').length;
+    imageNote.textContent =
+      `${imgs} image${imgs === 1 ? '' : 's'} · ${vids} video${vids === 1 ? '' : 's'} selected`;
+    imageNote.className = 'form-note';
+
+    previews.querySelectorAll('.media-remove').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        mediaItems = mediaItems.filter(m => m.uid !== Number(btn.dataset.uid));
+        renderPreviews();
+      });
+    });
   }
 
-  function clearImage() {
-    imageDataUrl = '';
-    imageName = '';
+  function clearMedia() {
+    mediaItems = [];
     fileInput.value = '';
-    preview.removeAttribute('src');
-    preview.hidden = true;
-    empty.hidden = false;
-    clearBtn.hidden = true;
-    imageNote.textContent = '';
+    renderPreviews();
   }
 
-  fileInput.addEventListener('change', (e) => setImage(e.target.files[0]));
-  clearBtn.addEventListener('click', clearImage);
+  fileInput.addEventListener('change', (e) => {
+    addFiles(e.target.files);
+    fileInput.value = ''; // allow re-picking the same file
+  });
+  clearBtn.addEventListener('click', clearMedia);
+  // The "Clear form" reset button should also drop selected media + sub-category.
+  // (Runs after the native reset; leaves any success/error note intact so the
+  //  programmatic form.reset() in the submit handler keeps its "✓ saved" note.)
+  form.addEventListener('reset', () => setTimeout(() => {
+    clearMedia();
+    populateSubCategories('');
+  }, 0));
   drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('dragging'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('dragging'));
   drop.addEventListener('drop', (e) => {
     e.preventDefault();
     drop.classList.remove('dragging');
-    if (e.dataTransfer.files[0]) setImage(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
   });
 
   // ----- Submit
@@ -106,6 +157,12 @@ import { SHOP_SECTIONS } from '../catalog.js';
     note.className = 'form-note';
 
     const fd = new FormData(form);
+    const mrp = Number(fd.get('mrp')) || 0;
+    const price = Number(fd.get('price')) || 0;
+
+    const images = mediaItems.filter(m => m.kind === 'image').map(m => ({ data: m.dataUrl, name: m.name }));
+    const videos = mediaItems.filter(m => m.kind === 'video').map(m => ({ data: m.dataUrl, name: m.name }));
+
     const payload = {
       type: 'product_add',
       admin_email: currentUser.email,
@@ -113,22 +170,40 @@ import { SHOP_SECTIONS } from '../catalog.js';
       code: (fd.get('code') || '').toString().trim(),
       section: (fd.get('section') || '').toString().trim(),
       sub_category: (fd.get('sub_category') || '').toString().trim(),
-      price: Number(fd.get('price')) || 0,
+      mrp,
+      price,
       description: (fd.get('description') || '').toString().trim(),
-      image_data: imageDataUrl,
-      image_name: imageName
+      images,
+      videos
     };
 
     if (!payload.name || !payload.code || !payload.section || !payload.sub_category || !payload.price) {
-      note.textContent = 'Fill in name, code, section, sub-category and price.';
+      note.textContent = 'Fill in name, code, section, sub-category and selling price.';
       note.className = 'form-note error';
       showToast('Missing required fields', 'error');
+      return;
+    }
+    if (mrp && mrp <= price) {
+      note.textContent = 'MRP must be higher than the selling price (it shows as the struck-through price).';
+      note.className = 'form-note error';
+      showToast('MRP should be above selling price', 'error');
+      return;
+    }
+    // Apps Script caps a single request near 50 MB; base64 inflates by ~33%.
+    const totalBytes = mediaItems.reduce((t, m) => t + (m.size || 0), 0);
+    if (totalBytes > 35 * 1024 * 1024) {
+      note.textContent = 'Too much media in one save — keep combined images + videos under ~35 MB. Save the product, then add the rest in a second product or trim the videos.';
+      note.className = 'form-note error';
+      showToast('Media too large to upload at once', 'error');
       return;
     }
 
     submitBtn.disabled = true;
     submitLabel.textContent = 'Saving…';
-    note.textContent = imageDataUrl ? 'Uploading image to Drive and saving…' : 'Saving…';
+    const mediaCount = images.length + videos.length;
+    note.textContent = mediaCount
+      ? `Uploading ${mediaCount} file${mediaCount === 1 ? '' : 's'} to Drive and saving…`
+      : 'Saving…';
 
     const r = await postAuth(payload);
 
@@ -146,14 +221,17 @@ import { SHOP_SECTIONS } from '../catalog.js';
         name: payload.name,
         section: payload.section,
         subCategory: payload.sub_category,
+        mrp: payload.mrp,
         price: payload.price,
         description: payload.description,
-        image: r.product?.image || '',
-        localImage: imageDataUrl,
+        image: (r.product && r.product.image) || '',
+        images: (r.product && r.product.images) || [],
+        videos: (r.product && r.product.videos) || [],
+        localImage: images.length ? images[0].data : '',
         dateAdded: new Date().toISOString().slice(0, 19).replace('T', ' ')
       });
       form.reset();
-      clearImage();
+      clearMedia();
       populateSubCategories('');
       // Also pull a fresh list so any other tab's edits land here.
       loadProducts();
@@ -224,7 +302,7 @@ import { SHOP_SECTIONS } from '../catalog.js';
     }
     grid.innerHTML = '<div class="orders-empty">Loading…</div>';
     try {
-      const res = await fetch(`${CONFIG.SHEETS_WEBHOOK}?action=products`);
+      const res = await fetch(`${CONFIG.SHEETS_WEBHOOK}?action=products&_t=${Date.now()}`);
       const data = await res.json();
       if (data.status !== 'ok' || !Array.isArray(data.products)) {
         grid.innerHTML = '<div class="orders-empty">Could not load products.</div>';
@@ -262,19 +340,30 @@ import { SHOP_SECTIONS } from '../catalog.js';
 
     grid.innerHTML = filtered.map(p => {
       const local = pendingLocalImages[p.code];
-      const drive = p.image || '';
+      const drive = p.image || (Array.isArray(p.images) ? p.images[0] : '') || '';
       const primary = local || drive;
       const fallback = local && drive ? drive : '';
       const imgTag = primary
         ? `<img src="${escape(primary)}" alt="" ${fallback ? `data-fallback="${escape(fallback)}" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.style.display='none'}"` : ''}>`
         : '<span>No image</span>';
+
+      const imgCount = Array.isArray(p.images) && p.images.length ? p.images.length : (p.image ? 1 : 0);
+      const vidCount = Array.isArray(p.videos) ? p.videos.length : 0;
+      const total = imgCount + vidCount;
+      const countBadge = total > 1
+        ? `<span class="saved-thumb-count">${imgCount}&nbsp;img${vidCount ? ' · ' + vidCount + ' vid' : ''}</span>`
+        : '';
+
+      const mrpTag = p.mrp && p.mrp > p.price
+        ? ` <s>₹${Number(p.mrp).toLocaleString('en-IN')}</s>` : '';
+
       return `
         <article class="saved-product" data-code="${escape(p.code)}">
-          <div class="saved-thumb">${imgTag}</div>
+          <div class="saved-thumb">${imgTag}${countBadge}</div>
           <div class="saved-meta">
             <strong>${escape(p.name)}</strong>
             <span class="saved-cat">${escape(p.section)} · ${escape(p.subCategory)} · ${escape(p.code)}</span>
-            <span class="saved-price">₹${Number(p.price).toLocaleString('en-IN')}</span>
+            <span class="saved-price">₹${Number(p.price).toLocaleString('en-IN')}${mrpTag}</span>
             ${p.description ? `<p>${escape(p.description)}</p>` : ''}
             <button type="button" class="product-delete-btn" data-action="delete">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
@@ -298,7 +387,7 @@ import { SHOP_SECTIONS } from '../catalog.js';
   async function confirmDelete(product, card) {
     const ok = window.confirm(
       `Delete "${product.name || product.code}"?\n\n` +
-      `This removes the row from the Products sheet and moves the image to the Drive trash. ` +
+      `This removes the row from the Products sheet and moves its images/videos to the Drive trash. ` +
       `It cannot be undone from this page.`
     );
     if (!ok) return;

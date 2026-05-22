@@ -79,6 +79,78 @@ import { currentUser } from '../session.js';
     loadServerReviews(product);
   }
 
+  // ---------- media gallery (multiple images + videos) ----------
+  let mediaList = [];   // [{ kind: 'image'|'video', url }]
+  let activeMedia = 0;
+
+  const isDriveUrl = (u) => /drive\.google\.com/.test(u || '');
+
+  function buildMedia(product) {
+    const imgs = (Array.isArray(product.images) && product.images.length)
+      ? product.images
+      : (product.img ? [product.img] : []);
+    const vids = Array.isArray(product.videos) ? product.videos : [];
+    const media = [];
+    imgs.forEach(u => { if (u) media.push({ kind: 'image', url: u }); });
+    vids.forEach(u => { if (u) media.push({ kind: 'video', url: u }); });
+    if (!media.length && product.img) media.push({ kind: 'image', url: product.img });
+    return media;
+  }
+
+  function galleryHtml() {
+    return `
+      <div class="pd-gallery">
+        <div class="pd-stage" id="pdStage"></div>
+        <div class="pd-thumbs" id="pdThumbs" hidden></div>
+      </div>`;
+  }
+
+  function paintStage(product) {
+    const stage = document.getElementById('pdStage');
+    if (!stage) return;
+    const m = mediaList[activeMedia] || mediaList[0];
+    if (!m) { stage.innerHTML = `<img src="${esc(product.img || '')}" alt="${esc(product.name)}">`; return; }
+    if (m.kind === 'video') {
+      stage.classList.add('is-video');
+      stage.innerHTML = isDriveUrl(m.url)
+        ? `<iframe src="${esc(m.url)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`
+        : `<video src="${esc(m.url)}" controls playsinline></video>`;
+    } else {
+      stage.classList.remove('is-video');
+      stage.innerHTML = `<img src="${esc(m.url)}" alt="${esc(product.name)}">`;
+      if (product.badge && activeMedia === 0) {
+        stage.innerHTML += `<span class="product-badge">${esc(product.badge)}</span>`;
+      }
+    }
+  }
+
+  function paintThumbs(product) {
+    const thumbs = document.getElementById('pdThumbs');
+    if (!thumbs) return;
+    if (mediaList.length <= 1) { thumbs.hidden = true; return; }
+    thumbs.hidden = false;
+    thumbs.innerHTML = mediaList.map((m, i) => {
+      const inner = m.kind === 'video'
+        ? `<span class="pd-thumb-video">&#9658;</span>`
+        : `<img src="${esc(m.url)}" alt="">`;
+      return `<button type="button" class="pd-thumb ${i === activeMedia ? 'active' : ''}" data-i="${i}">${inner}</button>`;
+    }).join('');
+    thumbs.querySelectorAll('.pd-thumb').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeMedia = Number(btn.dataset.i);
+        paintStage(product);
+        thumbs.querySelectorAll('.pd-thumb').forEach(b => b.classList.toggle('active', b === btn));
+      });
+    });
+  }
+
+  function renderGallery(product) {
+    mediaList = buildMedia(product);
+    activeMedia = 0;
+    paintStage(product);
+    paintThumbs(product);
+  }
+
   // ---------- render ----------
   function render(product) {
     const hasMrp = product.mrp && product.mrp > product.price;
@@ -87,12 +159,7 @@ import { currentUser } from '../session.js';
 
     root.innerHTML = `
       <div class="pd-top">
-        <div class="pd-gallery">
-          <div class="pd-image">
-            <img src="${esc(product.img)}" alt="${esc(product.name)}">
-            ${product.badge ? `<span class="product-badge">${esc(product.badge)}</span>` : ''}
-          </div>
-        </div>
+        ${galleryHtml()}
         <div class="pd-info">
           <div class="pd-cat">${esc(product.category || product.section || '')}</div>
           <h1 class="pd-name">${esc(product.name)}</h1>
@@ -155,6 +222,7 @@ import { currentUser } from '../session.js';
       </section>
     `;
 
+    renderGallery(product);
     renderRatingRow(product);
     renderReviews();
     renderStarPicker();

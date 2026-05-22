@@ -25,6 +25,7 @@
   <nav class="admin-tabs">
     <a href="admin.html" class="admin-tab">Home</a>
     <a href="admin-products.html" class="admin-tab active">Add products</a>
+    <a href="admin-orders.html" class="admin-tab">Orders</a>
   </nav>
   <div class="admin-nav-actions">
     <button class="btn btn-primary" id="adminLogout" type="button">Log out</button>
@@ -40,22 +41,22 @@
 
     <form id="productForm" class="product-form" novalidate>
       <div class="product-form-grid">
-        <!-- Image upload column -->
+        <!-- Media upload column — multiple images + videos -->
         <div class="image-uploader">
           <label class="image-drop" id="imageDrop">
-            <input type="file" id="productImage" name="image" accept="image/*" hidden />
+            <input type="file" id="productMedia" name="media" accept="image/*,video/*" multiple hidden />
             <div class="image-empty" id="imageEmpty">
               <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <rect x="3" y="4" width="18" height="16" rx="2" />
                 <circle cx="9" cy="10" r="2" />
                 <path d="m3 17 5-5 4 4 3-3 6 6" />
               </svg>
-              <strong>Click or drop an image</strong>
-              <span>JPG, PNG, or WEBP · up to 4 MB</span>
+              <strong>Click or drop images &amp; videos</strong>
+              <span>Images JPG/PNG/WEBP up to 4 MB · Videos MP4/WEBM up to 25 MB · add as many as you like</span>
             </div>
-            <img class="image-preview" id="imagePreview" alt="" hidden />
           </label>
-          <button type="button" class="link-btn" id="clearImageBtn" hidden>Remove image</button>
+          <div class="media-previews" id="mediaPreviews" hidden></div>
+          <button type="button" class="link-btn" id="clearMediaBtn" hidden>Remove all media</button>
           <p class="form-note" id="imageNote"></p>
         </div>
 
@@ -87,9 +88,15 @@
             </div>
           </div>
 
-          <div class="field">
-            <label>Price (&#8377;)</label>
-            <input type="number" name="price" required min="1" step="1" placeholder="e.g. 2499" />
+          <div class="form-row">
+            <div class="field">
+              <label>MRP (&#8377;)</label>
+              <input type="number" name="mrp" min="0" step="1" placeholder="e.g. 3200" />
+            </div>
+            <div class="field">
+              <label>Selling price (&#8377;)</label>
+              <input type="number" name="price" required min="1" step="1" placeholder="e.g. 2499" />
+            </div>
           </div>
 
           <div class="field">

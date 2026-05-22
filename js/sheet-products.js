@@ -54,6 +54,11 @@ export async function loadSheetProducts() {
       }
       if (!section.categories.includes(subCat)) section.categories.push(subCat);
 
+      const images = Array.isArray(p.images) && p.images.length
+        ? p.images
+        : (p.image ? [p.image] : []);
+      const videos = Array.isArray(p.videos) ? p.videos : [];
+
       newProducts.push({
         id: p.code,
         name: p.name,
@@ -61,9 +66,11 @@ export async function loadSheetProducts() {
         shopCategory: subCat,
         category: sectionName + ' / ' + subCat,
         price: p.price,
-        mrp: p.price,
+        mrp: Number(p.mrp) || 0,
         badge: 'New',
-        img: p.image || 'https://via.placeholder.com/600?text=' + encodeURIComponent(p.name),
+        img: images[0] || 'https://via.placeholder.com/600?text=' + encodeURIComponent(p.name),
+        images: images,
+        videos: videos,
         description: p.description
       });
     });

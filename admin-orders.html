@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Orders | MilirThreads Admin</title>
+<meta name="robots" content="noindex" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body class="admin-page">
+
+<header class="admin-nav">
+  <span class="brand">
+    <img src="logo.png" alt="" class="brand-logo">
+  </span>
+  <div class="admin-nav-meta">
+    <span class="admin-eyebrow">Admin</span>
+    <h1>Order tracking</h1>
+  </div>
+  <nav class="admin-tabs">
+    <a href="admin.html" class="admin-tab">Home</a>
+    <a href="admin-products.html" class="admin-tab">Add products</a>
+    <a href="admin-orders.html" class="admin-tab active">Orders</a>
+  </nav>
+  <div class="admin-nav-actions">
+    <button class="btn btn-ghost" id="refreshBtn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      Refresh
+    </button>
+    <button class="btn btn-primary" id="adminLogout" type="button">Log out</button>
+  </div>
+</header>
+
+<main class="admin-main container">
+
+  <section class="admin-grid stats-row">
+    <article class="stat-card" data-tone="ink">
+      <span class="stat-label">New orders</span>
+      <strong id="countReceived">—</strong>
+      <span class="stat-sub">Awaiting dispatch</span>
+    </article>
+    <article class="stat-card" data-tone="accent">
+      <span class="stat-label">Out for delivery</span>
+      <strong id="countOut">—</strong>
+      <span class="stat-sub">On the way</span>
+    </article>
+    <article class="stat-card" data-tone="green">
+      <span class="stat-label">Delivered</span>
+      <strong id="countDelivered">—</strong>
+      <span class="stat-sub">Completed</span>
+    </article>
+    <article class="stat-card" data-tone="warm">
+      <span class="stat-label">Total in pipeline</span>
+      <strong id="countTotal">—</strong>
+      <span class="stat-sub">Paid orders</span>
+    </article>
+  </section>
+
+  <section class="admin-card">
+    <header>
+      <h2>Delivery board</h2>
+      <span class="admin-eyebrow">Drag an order card between stages — or use the move buttons on touch</span>
+    </header>
+
+    <div class="kanban" id="kanban">
+      <section class="kanban-col" data-stage="received">
+        <header class="kanban-col-head">
+          <h3>New orders</h3>
+          <span class="kanban-count" id="colCountReceived">0</span>
+        </header>
+        <div class="kanban-list" id="colReceived"></div>
+      </section>
+
+      <section class="kanban-col" data-stage="out_for_delivery">
+        <header class="kanban-col-head">
+          <h3>Out for delivery</h3>
+          <span class="kanban-count" id="colCountOut">0</span>
+        </header>
+        <div class="kanban-list" id="colOut"></div>
+      </section>
+
+      <section class="kanban-col" data-stage="delivered">
+        <header class="kanban-col-head">
+          <h3>Delivered</h3>
+          <span class="kanban-count" id="colCountDelivered">0</span>
+        </header>
+        <div class="kanban-list" id="colDelivered"></div>
+      </section>
+    </div>
+
+    <p class="orders-empty" id="boardState">Loading orders…</p>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="js/pages/admin-orders.js"></script>
+</body>
+</html>

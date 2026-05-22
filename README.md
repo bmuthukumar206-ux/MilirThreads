@@ -7,7 +7,9 @@ Complete setup for your handcrafted store landing page.
 | File | Purpose |
 |---|---|
 | `Index.html` / `shop.html` / `enquiry.html` / `contact.html` | Customer-facing pages |
-| `admin.html` / `admin.js` | Admin-only dashboard (auth-gated) |
+| `admin.html` | Admin dashboard — stats & charts (auth-gated) |
+| `admin-products.html` | Admin — add products (multi image/video, MRP) |
+| `admin-orders.html` | Admin — order tracking Kanban board |
 | `styles.css` | All styling |
 | `script.js` | Products, cart, auth, Razorpay |
 | `google-apps-script.gs` | Backend for Google Sheets logging |
@@ -154,6 +156,42 @@ All admin endpoints (`adminStats`, `lead_qualify`, `order_status`) verify the re
 
 > **Important**: when you redeploy the Apps Script, the `Qualified` column will only be added automatically the next time a *new* lead is submitted (because that's when `getOrCreateSheet` runs). If your Leads sheet already exists without that column, manually add a header cell `Qualified` in column G.
 
+### Order tracking board ([admin-orders.html](admin-orders.html))
+
+The admin nav has an **Orders** tab. It opens a dedicated page with a
+drag-and-drop Kanban board that tracks fulfilment of every paid order:
+
+| Column | Meaning |
+|---|---|
+| **New orders** | Paid, not yet dispatched (`Delivery Status = received`) |
+| **Out for delivery** | Dispatched and on the way (`out_for_delivery`) |
+| **Delivered** | Completed (`delivered`) |
+
+- Each card shows the product image(s), customer, amount, date and payment id.
+- **Drag** a card to another column to update it — or use the **‹ / ›** move
+  buttons on the card (works on touch devices too).
+- The stat cards at the top count how many orders are in each stage.
+- A move POSTs `type: 'delivery_status'` to the webhook, which writes the new
+  value into the `Delivery Status` column of **Purchase Details**.
+- Only orders whose payment `Status` is `success` / `approved` / `demo` enter
+  the board; failed/cancelled payments are excluded.
+
+### Products with multiple images & videos
+
+The **Add products** form accepts **multiple images and videos per product**
+(click or drop into the upload box — pick as many files as you like):
+
+- Images: JPG / PNG / WEBP, up to 4 MB each.
+- Videos: MP4 / WEBM, up to 25 MB each. Keep a single save under ~35 MB total
+  (Apps Script limits the request size).
+- Every file is uploaded to the **MilirThreads Product Images** Drive folder.
+  Images are stored as `lh3.googleusercontent.com` links; videos as Drive
+  `/preview` links and are shown in an embedded player on the product page.
+- The product detail page shows a gallery: a main viewer plus a thumbnail
+  strip to switch between images and videos.
+- **MRP** vs **Selling price**: the form has both. The storefront shows the
+  selling price with the MRP struck through next to it.
+
 ### Reset a user / change admin password
 
 - Reset a user: delete their row in the **Users** sheet, or have them use Forgot password.
@@ -255,7 +293,18 @@ The product detail page shows:
 ## 📑 Sheet Columns
 
 **Purchase Details**
-| Date | Name | Phone | Email | Which Product | Amount | Received Amount | Discount | Promo Code | Payment ID | Status | Shipping Address |
+| Date | Name | Phone | Email | Which Product | Amount | Received Amount | Discount | Promo Code | Payment ID | Status | Shipping Address | Delivery Status |
+
+> `Delivery Status` (`received` / `out_for_delivery` / `delivered`) is added
+> automatically and drives the **Orders** Kanban board. It is separate from
+> the payment `Status` column.
+
+**Products**
+| Date Added | Code | Name | Section | Sub Category | MRP | Price | Description | Image URL | Video URL | Added By |
+
+> `Price` is the selling price; `MRP` is the struck-through price shown on the
+> storefront. `Image URL` and `Video URL` hold comma-joined Drive links so a
+> product can carry multiple images and videos.
 
 **Leads**
 | Date | Name | Phone | Email | Interest | Message |
