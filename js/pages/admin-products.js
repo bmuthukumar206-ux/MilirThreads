@@ -13,7 +13,7 @@ import { SHOP_SECTIONS } from '../catalog.js';
 (function () {
   if (!currentUser || currentUser.role !== 'admin') {
     alert('Admins only.');
-    location.replace('Index.html');
+    location.replace('index.html');
     return;
   }
 
@@ -418,6 +418,6 @@ import { SHOP_SECTIONS } from '../catalog.js';
 
   $('adminLogout').addEventListener('click', () => {
     persistUser(null);
-    location.replace('Index.html');
+    location.replace('index.html');
   });
 })();

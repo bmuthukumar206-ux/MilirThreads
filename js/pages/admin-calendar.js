@@ -12,7 +12,7 @@ import { postAuth } from '../api.js';
   // Auth gate — admin only
   if (!currentUser || currentUser.role !== 'admin') {
     alert('Admins only. Please sign in with an admin account.');
-    location.replace('Index.html');
+    location.replace('index.html');
     return;
   }
 
@@ -319,7 +319,7 @@ import { postAuth } from '../api.js';
   $('refreshBtn').addEventListener('click', load);
   $('adminLogout').addEventListener('click', () => {
     persistUser(null);
-    location.replace('Index.html');
+    location.replace('index.html');
   });
 
   // ----- boot -----

@@ -12,7 +12,7 @@ import { parseOrderProducts } from '../catalog.js';
   if (!currentUser) {
     // Not signed in → send them home with a prompt
     alert('Please sign in to view your orders.');
-    location.replace('Index.html');
+    location.replace('index.html');
     return;
   }
 
