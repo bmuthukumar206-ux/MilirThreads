@@ -13,9 +13,7 @@
  *   POST  type: 'payment' → append to Purchase Details
  *   POST  type: 'signup'  → create user (rejects duplicate email)
  *   POST  type: 'login'   → verify credentials, return user
- *   POST  type: 'product_add'      → add a product (multi image/video, MRP)
- *   POST  type: 'delivery_status'  → move an order on the Kanban board
- *   GET   action: 'orders' email=<email> → all orders for that email
+  *   GET   action: 'orders' email=<email> → all orders for that email
  *
  * Re-deploy as a new version every time you change this file.
  * ============================================================
@@ -64,7 +62,7 @@ const FROM_NAME = 'MilirThreads';
 const PURCHASE_HEADERS = [
   'Date', 'Name', 'Phone', 'Email', 'Which Product',
   'Amount', 'Received Amount', 'Discount', 'Promo Code',
-  'Payment ID', 'Status', 'Shipping Address', 'Delivery Status'
+  'Payment ID', 'Status', 'Shipping Address'
 ];
 
 const LEADS_HEADERS = [
@@ -76,8 +74,7 @@ const USERS_HEADERS = [
 ];
 
 const PRODUCTS_HEADERS = [
-  'Date Added', 'Code', 'Name', 'Section', 'Sub Category',
-  'MRP', 'Price', 'Description', 'Image URL', 'Video URL', 'Added By'
+  'Date Added', 'Code', 'Name', 'Section', 'Sub Category', 'Price', 'Description', 'Image URL', 'Added By'
 ];
 
 const REVIEWS_HEADERS = [
@@ -102,8 +99,7 @@ function doPost(e) {
       case 'google_login':    result = googleLogin(ss, data); break;
       case 'lead_qualify':    result = setLeadQualified(ss, data); break;
       case 'order_status':    result = setOrderStatus(ss, data); break;
-      case 'delivery_status': result = setDeliveryStatus(ss, data); break;
-      case 'product_add':     result = addProduct(ss, data); break;
+            case 'product_add':     result = addProduct(ss, data); break;
       case 'product_delete':  result = deleteProduct(ss, data); break;
       case 'favorite_toggle': result = toggleFavorite(ss, data); break;
       case 'review_add':      result = addReview(ss, data); break;
@@ -170,51 +166,23 @@ function getOrCreateSheet(ss, name, headers, headerColor) {
   return sheet;
 }
 
-// Auto-add the Delivery Status column to old Purchase Details sheets that
-// pre-date the order-tracking board. Idempotent. Existing rows default to
-// 'received' so they show up in the first Kanban column.
-function ensurePurchaseColumns(sheet) {
-  if (!sheet) return;
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  if (headers.indexOf('Delivery Status') >= 0) return;
-  const newCol = sheet.getLastColumn() + 1;
-  sheet.getRange(1, newCol)
-    .setValue('Delivery Status')
-    .setFontWeight('bold').setBackground('#1f4944').setFontColor('#ffffff');
-  const rows = sheet.getLastRow() - 1;
-  if (rows > 0) {
-    const fill = [];
-    for (let i = 0; i < rows; i++) fill.push(['received']);
-    sheet.getRange(2, newCol, rows, 1).setValues(fill);
-  }
-}
-
 function logPayment(ss, data) {
   const sheet = getOrCreateSheet(ss, PURCHASE_SHEET, PURCHASE_HEADERS, '#1f4944');
-  ensurePurchaseColumns(sheet);
-  const when = data.timestamp ? new Date(data.timestamp) : new Date();
-  const status = data.status || 'success';
-  // Only successfully-paid orders enter the delivery pipeline.
-  const delivery = /^(success|approved|demo)$/i.test(status) ? 'received' : '';
-
-  // Build the row by header position so the layout survives schema migrations.
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  const row = new Array(headers.length).fill('');
-  const set = (h, v) => { const i = headers.indexOf(h); if (i >= 0) row[i] = v; };
-  set('Date', Utilities.formatDate(when, TZ, 'yyyy-MM-dd HH:mm:ss'));
-  set('Name', data.customer_name || '');
-  set('Phone', data.customer_phone || '');
-  set('Email', data.customer_email || '');
-  set('Which Product', data.products || (data.items ? data.items.map(function (i) { return i.qty > 1 ? (i.name + ' x' + i.qty) : i.name; }).join(', ') : ''));
-  set('Amount', Number(data.amount) || 0);
-  set('Received Amount', Number(data.received_amount) || 0);
-  set('Discount', Number(data.discount) || 0);
-  set('Promo Code', data.promo_code || '');
-  set('Payment ID', data.payment_id || '');
-  set('Status', status);
-  set('Shipping Address', data.shipping_address || '');
-  set('Delivery Status', delivery);
-  sheet.appendRow(row);
+    const when = data.timestamp ? new Date(data.timestamp) : new Date();
+  sheet.appendRow([
+Utilities.formatDate(when, TZ, 'yyyy-MM-dd HH:mm:ss'),
+data.customer_name || '',
+data.customer_phone || '',
+data.customer_email || '',
+data.products || (data.items ? data.items.map(function (i) { return i.qty > 1 ? (i.name + ' x' + i.qty) : i.name; }).join(', ') : ''),
+Number(data.amount) || 0,
+Number(data.received_amount) || 0,
+Number(data.discount) || 0,
+data.promo_code || '',
+data.payment_id || '',
+    data.status || 'success',
+data.shipping_address || ''
+  ]);
 }
 
 // Auto-add the Qualified column to old Leads sheets that pre-date the feature.
@@ -734,8 +702,7 @@ function getOrdersForRequester(ss, opts) {
 
   const sheet = ss.getSheetByName(PURCHASE_SHEET);
   if (!sheet) return { status: 'ok', orders: [], role: role };
-  ensurePurchaseColumns(sheet);
-  const values = sheet.getDataRange().getValues();
+    const values = sheet.getDataRange().getValues();
   if (values.length < 2) return { status: 'ok', orders: [], role: role };
 
   const headers = values[0];
@@ -940,80 +907,24 @@ function setOrderStatus(ss, data) {
   return { status: 'error', error: 'Order not found' };
 }
 
-/* ---------- ADMIN: DELIVERY TRACKING (Kanban board) ---------- */
-// Moves an order between the delivery stages shown on admin-orders.html.
-// Stages: received → out_for_delivery → delivered.
-// Matched on Payment ID when present; otherwise on Date + Email (covers
-// demo / failed rows that have no Razorpay payment id).
-function setDeliveryStatus(ss, data) {
-  if (!requireAdmin(ss, data.admin_email)) return { status: 'error', error: 'Not authorized' };
-  const sheet = ss.getSheetByName(PURCHASE_SHEET);
-  if (!sheet) return { status: 'error', error: 'Purchase sheet missing' };
-  ensurePurchaseColumns(sheet);
-
-  const newStatus = (data.delivery_status || '').toLowerCase().trim();
-  const ALLOWED = ['received', 'out_for_delivery', 'delivered'];
-  if (ALLOWED.indexOf(newStatus) < 0) return { status: 'error', error: 'Invalid delivery status' };
-
-  const paymentId = (data.payment_id || '').toString().trim();
-  const orderDate = (data.order_date || '').toString().trim();
-  const orderEmail = (data.order_email || '').toString().toLowerCase().trim();
-
-  const values = sheet.getDataRange().getValues();
-  const headers = values[0];
-  const payCol = headers.indexOf('Payment ID');
-  const dateCol = headers.indexOf('Date');
-  const emailCol = headers.indexOf('Email');
-  const delCol = headers.indexOf('Delivery Status');
-  if (delCol < 0) return { status: 'error', error: 'Delivery Status column missing' };
-
-  for (let i = 1; i < values.length; i++) {
-    const rowPay = payCol >= 0 ? (values[i][payCol] || '').toString().trim() : '';
-    const rowDate = dateCol >= 0 ? normaliseDateCell(values[i][dateCol]) : '';
-    const rowEmail = emailCol >= 0 ? (values[i][emailCol] || '').toString().toLowerCase().trim() : '';
-    const matched = (paymentId && rowPay && rowPay === paymentId) ||
-                    (!paymentId && orderDate && rowDate === orderDate && rowEmail === orderEmail);
-    if (matched) {
-      sheet.getRange(i + 1, delCol + 1).setValue(newStatus);
-      return { status: 'ok', delivery_status: newStatus };
-    }
-  }
-  return { status: 'error', error: 'Order not found' };
-}
-
 /* ---------- PRODUCTS (admin only) ---------- */
 function getOrCreateProductsFolder() {
   const it = DriveApp.getFoldersByName(PRODUCTS_FOLDER);
   return it.hasNext() ? it.next() : DriveApp.createFolder(PRODUCTS_FOLDER);
 }
 
-// Saves one image OR video data-URL to Drive and returns an embeddable URL.
-//   image → https://lh3.googleusercontent.com/d/<id>=w1000   (works in <img>)
-//   video → https://drive.google.com/file/d/<id>/preview     (works in <iframe>)
-function saveProductMedia(base64DataUrl, baseName) {
+function saveProductImage(base64DataUrl, baseName) {
   if (!base64DataUrl) return '';
-  const m = base64DataUrl.match(/^data:([a-zA-Z]+\/[a-zA-Z0-9+.\-]+);base64,(.+)$/);
-  if (!m) throw new Error('Invalid media data');
+  const m = base64DataUrl.match(/^data:(image\/[a-zA-Z+.-]+);base64,(.+)$/);
+  if (!m) throw new Error('Invalid image data');
   const mimeType = m[1];
-  const isVideo = mimeType.indexOf('video/') === 0;
-  const isImage = mimeType.indexOf('image/') === 0;
-  if (!isVideo && !isImage) throw new Error('Unsupported media type: ' + mimeType);
-
-  const ext = mimeType.split('/')[1]
-    .replace('jpeg', 'jpg')
-    .replace('quicktime', 'mov')
-    .replace('x-matroska', 'mkv');
+    const ext = mimeType.split('/')[1]    .replace('jpeg', 'jpg');
   const bytes = Utilities.base64Decode(m[2]);
   const cleanName = (baseName || 'product').replace(/[^a-zA-Z0-9_\-]/g, '_');
   const blob = Utilities.newBlob(bytes, mimeType, cleanName + '.' + ext);
   const folder = getOrCreateProductsFolder();
   const file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-
-  if (isVideo) {
-    // Drive's player iframe streams the video without download prompts.
-    return 'https://drive.google.com/file/d/' + file.getId() + '/preview';
-  }
   // Drive's `uc?export=view` redirects through a virus-scan page, and the
   // `drive.google.com/thumbnail` endpoint breaks when embedded from non-Google
   // origins. The `lh3.googleusercontent.com/d/<id>` CDN URL is what Google's
@@ -1021,35 +932,27 @@ function saveProductMedia(base64DataUrl, baseName) {
   return 'https://lh3.googleusercontent.com/d/' + file.getId() + '=w1000';
 }
 
-// Back-compat alias — older code/tests call saveProductImage().
-function saveProductImage(base64DataUrl, baseName) {
-  return saveProductMedia(base64DataUrl, baseName);
-}
-
 // Migrate an existing Products sheet to the new schema:
 //   - Rename 'Category' header → 'Section'
-//   - Add 'Sub Category', 'MRP' and 'Video URL' columns if missing
+//   - Insert a 'Sub Category' column right after Section if missing
 function ensureProductsColumns(sheet) {
   if (!sheet) return;
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+const lastCol = sheet.getLastColumn();
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
   // Rename Category → Section
   const oldCatIdx = headers.indexOf('Category');
   const sectionIdx = headers.indexOf('Section');
   if (oldCatIdx >= 0 && sectionIdx < 0) {
     sheet.getRange(1, oldCatIdx + 1).setValue('Section');
   }
-  // Append any columns that pre-migration sheets are missing.
-  const addIfMissing = (name) => {
-    const hdrs = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    if (hdrs.indexOf(name) >= 0) return;
+  // Add Sub Category column if missing
+  const refreshed = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    if (refreshed.indexOf('Sub Category') < 0) {
     const newCol = sheet.getLastColumn() + 1;
     sheet.getRange(1, newCol)
-      .setValue(name)
+      .setValue('Sub Category')
       .setFontWeight('bold').setBackground('#054a3a').setFontColor('#ffffff');
-  };
-  addIfMissing('Sub Category');
-  addIfMissing('MRP');
-  addIfMissing('Video URL');
+  }
 }
 
 function getProducts(ss) {
@@ -1059,24 +962,17 @@ function getProducts(ss) {
   const values = sheet.getDataRange().getValues();
   if (values.length < 2) return { status: 'ok', products: [] };
   const headers = values[0];
-  const splitList = (v) => (v || '').toString().split(',').map(s => s.trim()).filter(Boolean);
-  const out = [];
+    const out = [];
   for (let i = 1; i < values.length; i++) {
     const row = rowToOrder(headers, values[i]);
-    const images = splitList(row['Image URL']);
-    const videos = splitList(row['Video URL']);
-    const price = Number(row['Price']) || 0;
-    out.push({
+        out.push({
       code: row['Code'] || '',
       name: row['Name'] || '',
       section: row['Section'] || row['Category'] || '',
       subCategory: row['Sub Category'] || '',
-      mrp: Number(row['MRP']) || 0,
-      price: price,
-      description: row['Description'] || '',
-      image: images[0] || '',   // first image — back-compat for single-image readers
-      images: images,
-      videos: videos,
+      price: Number(row['Price']) || 0,
+            description: row['Description'] || '',
+      image: row['Image URL'] || '',
       dateAdded: row['Date Added'] || ''
     });
   }
@@ -1091,11 +987,10 @@ function addProduct(ss, data) {
   // Accept either the new section/sub_category fields or the legacy category field.
   const section = (data.section || data.category || '').toString().trim();
   const subCategory = (data.sub_category || '').toString().trim();
-  const price = Number(data.price) || 0;                 // selling price
-  const mrp = Number(data.mrp) || 0;                     // strike-through MRP
+  const price = Number(data.price) || 0;
   const description = (data.description || '').toString().trim();
   if (!code || !name || !section || !subCategory || !price) {
-    return { status: 'error', error: 'Code, name, section, sub-category and selling price are required' };
+    return { status: 'error', error: 'Code, name, section, sub-category and price are required' };
   }
 
   const sheet = getOrCreateSheet(ss, PRODUCTS_SHEET, PRODUCTS_HEADERS, '#054a3a');
@@ -1111,35 +1006,17 @@ function addProduct(ss, data) {
     }
   }
 
-  // Gather media — new `images` / `videos` arrays of { data, name }, plus the
-  // legacy single `image_data` field so old clients keep working.
-  const imageInputs = [];
-  if (Array.isArray(data.images)) {
-    data.images.forEach(m => { if (m && m.data) imageInputs.push(m); });
-  }
-  if (data.image_data) imageInputs.push({ data: data.image_data, name: data.image_name || 'image' });
-  const videoInputs = [];
-  if (Array.isArray(data.videos)) {
-    data.videos.forEach(m => { if (m && m.data) videoInputs.push(m); });
-  }
-
-  const imageUrls = [];
-  const videoUrls = [];
-  try {
-    imageInputs.forEach((m, i) => {
-      const url = saveProductMedia(m.data, code + '_img' + (i + 1) + '_' + (m.name || 'image'));
-      if (url) imageUrls.push(url);
-    });
-    videoInputs.forEach((m, i) => {
-      const url = saveProductMedia(m.data, code + '_vid' + (i + 1) + '_' + (m.name || 'video'));
-      if (url) videoUrls.push(url);
-    });
+  let imageUrl = '';
+  if (data.image_data) {
+    try {
+      imageUrl = saveProductImage(data.image_data, code + '_' + (data.image_name || 'image'));
   } catch (err) {
     const msg = err && err.message ? err.message : err.toString();
     if (/permission|authoriz/i.test(msg)) {
       return { status: 'error', error: 'Drive access not authorized. In Apps Script, run `authorizeDriveOnce` once from the editor, then redeploy.' };
     }
-    return { status: 'error', error: 'Media upload failed: ' + msg };
+    return { status: 'error', error: 'Image upload failed: ' + msg };
+}
   }
 
   // Build row using header positions so the migration above is honored.
@@ -1151,39 +1028,28 @@ function addProduct(ss, data) {
   set('Name', name);
   set('Section', section);
   set('Sub Category', subCategory);
-  set('MRP', mrp);
-  set('Price', price);
+    set('Price', price);
   set('Description', description);
-  set('Image URL', imageUrls.join(','));
-  set('Video URL', videoUrls.join(','));
+  set('Image URL', imageUrl);
   set('Added By', data.admin_email || '');
   sheet.appendRow(row);
 
-  return {
-    status: 'ok',
-    product: {
-      code: code, name: name, section: section, subCategory: subCategory,
-      mrp: mrp, price: price,
-      image: imageUrls[0] || '', images: imageUrls, videos: videoUrls
-    }
-  };
+  return {     status: 'ok',     product: {       code: code, name: name, section: section, subCategory: subCategory, image: imageUrl } };
 }
 
 // Best-effort Drive file delete based on the embed URL we stored.
 //   https://lh3.googleusercontent.com/d/<FILE_ID>=w1000
-//   https://drive.google.com/file/d/<FILE_ID>/preview   (videos)
 //   https://drive.google.com/uc?...&id=<FILE_ID>
 //   https://drive.google.com/thumbnail?id=<FILE_ID>...
-function tryDeleteDriveFile(mediaUrl) {
-  if (!mediaUrl) return;
+function tryDeleteDriveFile(imageUrl) {
+  if (!imageUrl) return;
   const patterns = [
     /lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_\-]+)/,
-    /\/file\/d\/([a-zA-Z0-9_\-]+)/,
-    /[?&]id=([a-zA-Z0-9_\-]+)/
+        /[?&]id=([a-zA-Z0-9_\-]+)/
   ];
   let fileId = null;
   for (let i = 0; i < patterns.length; i++) {
-    const m = mediaUrl.match(patterns[i]);
+    const m = imageUrl.match(patterns[i]);
     if (m) { fileId = m[1]; break; }
   }
   if (!fileId) return;
@@ -1195,14 +1061,6 @@ function tryDeleteDriveFile(mediaUrl) {
     // gets removed below.
     Logger.log('Drive file delete failed for ' + fileId + ': ' + err);
   }
-}
-
-// Trash every comma-joined media URL in a cell (images or videos).
-function tryDeleteDriveFiles(cellValue) {
-  (cellValue || '').toString().split(',').forEach(url => {
-    const u = url.trim();
-    if (u) tryDeleteDriveFile(u);
-  });
 }
 
 function deleteProduct(ss, data) {
@@ -1218,16 +1076,13 @@ function deleteProduct(ss, data) {
   const headers = values[0];
   const codeCol = headers.indexOf('Code');
   const imgCol = headers.indexOf('Image URL');
-  const vidCol = headers.indexOf('Video URL');
-  if (codeCol < 0) return { status: 'error', error: 'Code column missing' };
+    if (codeCol < 0) return { status: 'error', error: 'Code column missing' };
 
   for (let i = 1; i < values.length; i++) {
     if ((values[i][codeCol] || '').toString().toLowerCase() === code.toLowerCase()) {
-      const imageUrls = imgCol >= 0 ? (values[i][imgCol] || '').toString() : '';
-      const videoUrls = vidCol >= 0 ? (values[i][vidCol] || '').toString() : '';
-      sheet.deleteRow(i + 1);
-      tryDeleteDriveFiles(imageUrls);
-      tryDeleteDriveFiles(videoUrls);
+      const imageUrl = imgCol >= 0 ? (values[i][imgCol] || '').toString() : '';
+            sheet.deleteRow(i + 1);
+      if (imageUrl)       tryDeleteDriveFile(imageUrl);
       return { status: 'ok', deleted: code };
     }
   }
