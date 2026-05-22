@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calendar | MilirThreads Admin</title>
+<meta name="robots" content="noindex" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body class="admin-page">
+
+<header class="admin-nav">
+  <a href="admin.html" class="admin-brand" aria-label="MilirThreads admin">
+    <img src="logo.png" alt="" class="brand-logo">
+  </a>
+  <nav class="admin-tabs">
+    <a href="admin.html" class="admin-tab">Dashboard</a>
+    <a href="admin-products.html" class="admin-tab">Products</a>
+    <a href="admin-orders.html" class="admin-tab">Orders</a>
+    <a href="admin-calendar.html" class="admin-tab active">Calendar</a>
+  </nav>
+  <div class="admin-nav-actions">
+    <button class="btn btn-primary" id="adminLogout" type="button">Log out</button>
+  </div>
+</header>
+
+<main class="admin-main container">
+
+  <div class="admin-head">
+    <div class="admin-head-text">
+      <span class="admin-eyebrow">Admin</span>
+      <h1>Calendar</h1>
+      <p class="admin-head-sub">Schedule orders, events and product launches</p>
+    </div>
+    <div class="admin-head-actions">
+      <button class="btn btn-ghost" id="refreshBtn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        Refresh
+      </button>
+      <button class="btn btn-primary" id="newEntryBtn" type="button">+ New entry</button>
+    </div>
+  </div>
+
+  <div class="cal-layout">
+    <section class="admin-card cal-grid-card">
+      <div class="cal-toolbar">
+        <div class="cal-nav">
+          <button class="cal-arrow" id="calPrev" type="button" aria-label="Previous month">&lsaquo;</button>
+          <strong id="calMonthLabel">—</strong>
+          <button class="cal-arrow" id="calNext" type="button" aria-label="Next month">&rsaquo;</button>
+        </div>
+        <button class="cal-today-btn" id="calToday" type="button">Today</button>
+        <div class="cal-legend">
+          <span class="cal-legend-item cat-order"><i></i>Order</span>
+          <span class="cal-legend-item cat-event"><i></i>Event</span>
+          <span class="cal-legend-item cat-launch"><i></i>Launch</span>
+        </div>
+      </div>
+      <div class="cal-weekdays">
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
+        <span>Fri</span><span>Sat</span><span>Sun</span>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </section>
+
+    <section class="admin-card cal-day-card">
+      <header class="cal-day-head">
+        <div>
+          <span class="admin-eyebrow">Schedule</span>
+          <h2 id="calDayTitle">Select a day</h2>
+        </div>
+        <button class="btn btn-ghost cal-day-add" id="calDayAdd" type="button">+ Add</button>
+      </header>
+      <div class="cal-timeline" id="calTimeline">
+        <p class="cal-empty-day">Loading calendar…</p>
+      </div>
+    </section>
+  </div>
+
+</main>
+
+<div class="modal-overlay" id="entryModal">
+  <div class="modal cal-modal">
+    <button class="modal-close" id="entryClose" type="button" aria-label="Close">&times;</button>
+    <span class="modal-eyebrow">Schedule</span>
+    <h3 id="entryModalTitle">New calendar entry</h3>
+    <form id="entryForm" class="cal-form" novalidate>
+      <div class="form-row">
+        <div class="field">
+          <label>Date</label>
+          <input type="date" name="date" required />
+        </div>
+        <div class="field">
+          <label>Time <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+          <input type="time" name="time" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Title</label>
+        <input type="text" name="title" required placeholder="e.g. Diwali collection launch" />
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select name="category">
+          <option value="order">Order</option>
+          <option value="event">Event</option>
+          <option value="launch">Launch</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Notes <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+        <textarea name="notes" rows="3" placeholder="Any extra detail…"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary full" id="entrySubmit">Save entry</button>
+      <p class="form-note" id="entryNote"></p>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="js/pages/admin-calendar.js"></script>
+</body>
+</html>

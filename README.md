@@ -10,6 +10,7 @@ Complete setup for your handcrafted store landing page.
 | `admin.html` | Admin dashboard — stats & charts (auth-gated) |
 | `admin-products.html` | Admin — add products (multi image/video, MRP) |
 | `admin-orders.html` | Admin — order tracking Kanban board |
+| `admin-calendar.html` | Admin — schedule orders / events / launches |
 | `styles.css` | All styling |
 | `script.js` | Products, cart, auth, Razorpay |
 | `google-apps-script.gs` | Backend for Google Sheets logging |
@@ -192,6 +193,27 @@ The **Add products** form accepts **multiple images and videos per product**
 - **MRP** vs **Selling price**: the form has both. The storefront shows the
   selling price with the MRP struck through next to it.
 
+### Schedule calendar ([admin-calendar.html](admin-calendar.html))
+
+The admin nav has a **Calendar** tab — a planning board for the store:
+
+- A **month grid** (Monday-first) with coloured dots on every day that has
+  something scheduled, plus a **day timeline** panel showing the selected
+  day's entries by time.
+- Use **+ New entry** (or **+ Add** on a day) to schedule something. Each
+  entry has a date, optional time, title, category and notes.
+- Categories: **Order** (green), **Event** (amber), **Launch** (purple).
+- Entries are saved to a **Calendar** sheet via the webhook, so they persist
+  and are shared across every admin / device.
+
+### Admin theme
+
+The four admin pages (`admin.html`, `admin-products.html`, `admin-orders.html`,
+`admin-calendar.html`) share a green theme with a centred top-tab nav. The
+theme is scoped to `.admin-page` only — the customer storefront keeps its
+original look. All admin pages are responsive (the tab bar scrolls on small
+screens).
+
 ### Reset a user / change admin password
 
 - Reset a user: delete their row in the **Users** sheet, or have them use Forgot password.
@@ -314,6 +336,12 @@ The product detail page shows:
 
 **Reviews**
 | Date | Product ID | Product Name | Customer Name | Email | Rating | Review |
+
+**Calendar**
+| ID | Date | Time | Title | Category | Notes | Created By | Created At |
+
+> Created automatically the first time an admin saves a calendar entry.
+> `Category` is `order`, `event` or `launch`.
 
 ## 📷 Instagram Feed Integration
 
