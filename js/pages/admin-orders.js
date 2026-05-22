@@ -15,7 +15,7 @@ import { loadSheetProducts } from '../sheet-products.js';
   // Auth gate — must be admin
   if (!currentUser || currentUser.role !== 'admin') {
     alert('Admins only. Please sign in with an admin account.');
-    location.replace('Index.html');
+    location.replace('index.html');
     return;
   }
 
@@ -220,7 +220,7 @@ import { loadSheetProducts } from '../sheet-products.js';
   $('refreshBtn').addEventListener('click', load);
   $('adminLogout').addEventListener('click', () => {
     persistUser(null);
-    location.replace('Index.html');
+    location.replace('index.html');
   });
 
   wireColumns();

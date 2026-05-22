@@ -12,7 +12,7 @@ import { postAuth } from '../api.js';
   // Auth gate — admin only
   if (!currentUser || currentUser.role !== 'admin') {
     alert('Admins only. Please sign in with an admin account.');
-    location.replace('Index.html');
+    location.replace('index.html');
     return;
   }
 
@@ -26,6 +26,22 @@ import { postAuth } from '../api.js';
   const CATEGORIES = ['order', 'event', 'launch'];
   const catLabel = (c) => ({ order: 'Order', event: 'Event', launch: 'Launch' }[c] || 'Event');
 
+  // Small inline icons per category (reference-image style).
+  const CAT_ICONS = {
+    order: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+    event: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    launch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg>'
+  };
+
+  // Turn a raw webhook error into a clear instruction for the admin.
+  function friendlyError(err) {
+    const e = (err || '').toString();
+    if (!e || /unknown payload type/i.test(e)) {
+      return 'Calendar saving isn’t live yet — redeploy the Apps Script: Deploy → Manage deployments → ✎ Edit → Version: New version → Deploy, then reload this page.';
+    }
+    return e;
+  }
+
   // ----- date helpers (all local time) -----
   const pad = (n) => String(n).padStart(2, '0');
   const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -33,11 +49,6 @@ import { postAuth } from '../api.js';
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || '');
     return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
   };
-  function prettyDay(s) {
-    const d = parseYmd(s);
-    if (!d) return s || '';
-    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-  }
   function fmtTime(t) {
     const m = /^(\d{1,2}):(\d{2})/.exec(t || '');
     if (!m) return '';
@@ -54,24 +65,31 @@ import { postAuth } from '../api.js';
   let viewMonth = today.getMonth();   // 0-11
   let selectedDate = todayStr;
   let entries = [];                   // [{id,date,time,title,category,notes}]
+  let backendReady = true;            // false → webhook can't serve the calendar yet
 
   // ----- load -----
+  // Always renders the calendar; never throws. If the webhook can't serve
+  // calendar data yet, the page still works and shows a calm inline hint.
   async function load() {
+    backendReady = true;
     if (CONFIG.SHEETS_WEBHOOK.includes('YOUR_DEPLOYMENT_ID')) {
-      $('calTimeline').innerHTML = '<p class="cal-empty-day">Webhook not configured in js/config.js.</p>';
+      backendReady = false;
       renderCalendar();
+      renderDay();
       return;
     }
     try {
       const res = await fetch(`${CONFIG.SHEETS_WEBHOOK}?action=calendar&_t=${Date.now()}`);
       const data = await res.json();
-      if (data.status === 'ok' && Array.isArray(data.entries)) {
+      if (data && data.status === 'ok' && Array.isArray(data.entries)) {
         entries = data.entries;
       } else {
-        showToast(data.error || 'Could not load calendar', 'error');
+        // Reached the webhook, but this deployment doesn't know the
+        // 'calendar' action — it needs to be redeployed as a new version.
+        backendReady = false;
       }
     } catch (err) {
-      showToast('Network error: ' + err.message, 'error');
+      backendReady = false;
     }
     renderCalendar();
     renderDay();
@@ -126,14 +144,28 @@ import { postAuth } from '../api.js';
 
   // ----- render: day timeline -----
   function renderDay() {
-    const title = $('calDayTitle');
-    title.textContent = selectedDate === todayStr ? `Today · ${prettyDay(selectedDate)}` : prettyDay(selectedDate);
-
     const list = entries
       .filter(e => e.date === selectedDate)
       .sort((a, b) => (a.time || '~').localeCompare(b.time || '~'));
 
+    // Heading — "Today · Friday 6 Feb" style.
+    const d = parseYmd(selectedDate);
+    const longOpts = { weekday: 'long', day: 'numeric', month: 'short' };
+    const dayText = d ? d.toLocaleDateString('en-IN', longOpts) : (selectedDate || '');
+    $('calDayTitle').textContent = selectedDate === todayStr ? `Today · ${dayText}` : dayText;
+    $('calDayCount').textContent = !backendReady ? ''
+      : (list.length ? `${list.length} scheduled` : 'Nothing scheduled');
+
     const wrap = $('calTimeline');
+
+    if (!backendReady) {
+      wrap.innerHTML = `
+        <div class="cal-hint">
+          <strong>Calendar storage isn’t connected yet</strong>
+          <span>Redeploy the Apps Script — <em>Deploy → Manage deployments → ✎ Edit → Version: New version → Deploy</em> — then reload. The calendar still works for browsing in the meantime.</span>
+        </div>`;
+      return;
+    }
     if (!list.length) {
       wrap.innerHTML = '<p class="cal-empty-day">Nothing scheduled for this day.<br>Use <strong>+ Add</strong> to plan something.</p>';
       return;
@@ -142,10 +174,13 @@ import { postAuth } from '../api.js';
       const cat = CATEGORIES.indexOf(e.category) >= 0 ? e.category : 'event';
       return `
         <article class="cal-event cat-${cat}">
-          <span class="cal-event-time">${e.time ? esc(fmtTime(e.time)) : 'All day'}</span>
+          <span class="cal-event-icon">${CAT_ICONS[cat]}</span>
           <div class="cal-event-body">
+            <div class="cal-event-top">
+              <strong>${esc(e.title)}</strong>
+              <span class="cal-event-time">${e.time ? esc(fmtTime(e.time)) : 'All day'}</span>
+            </div>
             <span class="cal-event-cat">${esc(catLabel(cat))}</span>
-            <strong>${esc(e.title)}</strong>
             ${e.notes ? `<p>${esc(e.notes)}</p>` : ''}
           </div>
           <button class="cal-event-del" type="button" data-id="${esc(e.id)}" aria-label="Delete">&times;</button>
@@ -216,6 +251,7 @@ import { postAuth } from '../api.js';
     submitBtn.textContent = 'Save entry';
 
     if (r && r.status === 'ok') {
+      backendReady = true;
       entries.push(r.entry || {
         id: 'tmp_' + Date.now(), date: payload.date, time: payload.time,
         title: payload.title, category: payload.category, notes: payload.notes
@@ -229,9 +265,9 @@ import { postAuth } from '../api.js';
       closeModal();
       showToast('Entry scheduled', 'success');
     } else {
-      note.textContent = (r && r.error) || 'Could not save entry';
+      note.textContent = friendlyError(r && r.error);
       note.className = 'form-note error';
-      showToast((r && r.error) || 'Save failed', 'error');
+      showToast('Could not save the entry', 'error');
     }
   });
 
@@ -252,7 +288,7 @@ import { postAuth } from '../api.js';
       renderDay();
       showToast('Entry removed', 'success');
     } else {
-      showToast((r && r.error) || 'Could not delete entry', 'error');
+      showToast(friendlyError(r && r.error), 'error');
     }
   }
 
@@ -283,7 +319,7 @@ import { postAuth } from '../api.js';
   $('refreshBtn').addEventListener('click', load);
   $('adminLogout').addEventListener('click', () => {
     persistUser(null);
-    location.replace('Index.html');
+    location.replace('index.html');
   });
 
   // ----- boot -----

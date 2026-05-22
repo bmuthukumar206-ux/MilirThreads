@@ -6,7 +6,7 @@ Complete setup for your handcrafted store landing page.
 
 | File | Purpose |
 |---|---|
-| `Index.html` / `shop.html` / `enquiry.html` / `contact.html` | Customer-facing pages |
+| `index.html` / `shop.html` / `enquiry.html` / `contact.html` | Customer-facing pages |
 | `admin.html` | Admin dashboard — stats & charts (auth-gated) |
 | `admin-products.html` | Admin — add products (multi image/video, MRP) |
 | `admin-orders.html` | Admin — order tracking Kanban board |
@@ -19,7 +19,7 @@ Complete setup for your handcrafted store landing page.
 ## 🚀 Quick Start
 
 1. Keep all files in the same folder.
-2. Open `Index.html` in any browser — works immediately for preview (demo mode for payments).
+2. Open `index.html` in any browser — works immediately for preview (demo mode for payments).
 3. To go live, host these files on any static host (Netlify, Vercel, GitHub Pages, your shared hosting).
 
 ## 💳 Razorpay Setup
@@ -260,7 +260,7 @@ billable services (Maps, Cloud servers, storage); plain Google Sign-In is not bi
 Replace the placeholder `YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com` with your real
 Client ID. It appears in the `data-client_id` attribute of the auth modal on **5 pages**:
 
-`Index.html`, `shop.html`, `contact.html`, `enquiry.html`, `search.html`
+`index.html`, `shop.html`, `contact.html`, `enquiry.html`, `search.html`
 
 ```html
 <div id="g_id_onload"
