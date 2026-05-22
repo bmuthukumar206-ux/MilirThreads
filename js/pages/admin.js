@@ -93,7 +93,7 @@ import { postAuth } from '../api.js';
 
   // -------------------- CHARTS --------------------
   const chartInstances = {};
-  const palette = ['#0f62fe', '#16a34a', '#f97316', '#dc2626', '#7c3aed', '#0891b2', '#db2777', '#65a30d'];
+  const palette = ['#1f7a5c', '#16a34a', '#e0911b', '#7c5cd6', '#0891b2', '#dc2626', '#db2777', '#65a30d'];
 
   function destroyChart(id) {
     if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }

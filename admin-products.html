@@ -15,17 +15,14 @@
 <body class="admin-page">
 
 <header class="admin-nav">
-  <span class="brand">
+  <a href="admin.html" class="admin-brand" aria-label="MilirThreads admin">
     <img src="logo.png" alt="" class="brand-logo">
-  </span>
-  <div class="admin-nav-meta">
-    <span class="admin-eyebrow">Admin</span>
-    <h1>Add a product</h1>
-  </div>
+  </a>
   <nav class="admin-tabs">
-    <a href="admin.html" class="admin-tab">Home</a>
-    <a href="admin-products.html" class="admin-tab active">Add products</a>
+    <a href="admin.html" class="admin-tab">Dashboard</a>
+    <a href="admin-products.html" class="admin-tab active">Products</a>
     <a href="admin-orders.html" class="admin-tab">Orders</a>
+    <a href="admin-calendar.html" class="admin-tab">Calendar</a>
   </nav>
   <div class="admin-nav-actions">
     <button class="btn btn-primary" id="adminLogout" type="button">Log out</button>
@@ -33,6 +30,14 @@
 </header>
 
 <main class="admin-main container">
+  <div class="admin-head">
+    <div class="admin-head-text">
+      <span class="admin-eyebrow">Admin</span>
+      <h1>Products</h1>
+      <p class="admin-head-sub">Add new products with multiple images, videos and MRP</p>
+    </div>
+  </div>
+
   <section class="admin-card product-form-card">
     <header>
       <h2>Product details</h2>

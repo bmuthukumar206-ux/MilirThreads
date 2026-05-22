@@ -16,28 +16,34 @@
 <body class="admin-page">
 
 <header class="admin-nav">
-  <span class="brand">
+  <a href="admin.html" class="admin-brand" aria-label="MilirThreads admin">
     <img src="logo.png" alt="" class="brand-logo">
-  </span>
-  <div class="admin-nav-meta">
-    <span class="admin-eyebrow">Admin</span>
-    <h1 id="adminGreeting">Dashboard</h1>
-  </div>
+  </a>
   <nav class="admin-tabs">
-    <a href="admin.html" class="admin-tab active">Home</a>
-    <a href="admin-products.html" class="admin-tab">Add products</a>
+    <a href="admin.html" class="admin-tab active">Dashboard</a>
+    <a href="admin-products.html" class="admin-tab">Products</a>
     <a href="admin-orders.html" class="admin-tab">Orders</a>
+    <a href="admin-calendar.html" class="admin-tab">Calendar</a>
   </nav>
   <div class="admin-nav-actions">
-    <button class="btn btn-ghost" id="refreshBtn" type="button">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-      Refresh
-    </button>
     <button class="btn btn-primary" id="adminLogout" type="button">Log out</button>
   </div>
 </header>
 
 <main class="admin-main container">
+
+  <div class="admin-head">
+    <div class="admin-head-text">
+      <span class="admin-eyebrow">Admin</span>
+      <h1 id="adminGreeting">Dashboard</h1>
+    </div>
+    <div class="admin-head-actions">
+      <button class="btn btn-ghost" id="refreshBtn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
 
   <section class="admin-grid stats-row">
     <article class="stat-card" data-tone="ink">
