@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About | MilirThreads Handcrafted Studio</title>
+<meta name="description" content="Learn how MilirThreads works and contact the studio." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<div class="announce">
+  <div class="announce-track">
+    <span>Free shipping across India on orders Rs.999+</span>
+    <span>|</span>
+    <span>Use code <b>MILIR10</b> for 10% off your first order</span>
+    <span>|</span>
+    <span>Handmade in Chennai</span>
+    <span>|</span>
+  </div>
+</div>
+
+<header class="nav-wrap" id="navWrap">
+  <nav class="nav container">
+    <a href="Index.html" class="brand">
+      <img src="logo.png" alt="" class="brand-logo">
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="Index.html" class="nav-link">Home</a></li>
+      <li><a href="shop.html" class="nav-link">Shop</a></li>
+      <li><a href="enquiry.html" class="nav-link">Enquiry</a></li>
+      <li><a href="contact.html" class="nav-link active">About</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button class="icon-btn" id="searchBtn" aria-label="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <button class="icon-btn" id="accountBtn" aria-label="Account">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
+        <span class="account-dot" id="accountDot" hidden></span>
+      </button>
+      <button class="icon-btn cart-btn" id="cartBtn" aria-label="Cart">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h2l2.4 12.4a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 9H6"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="Index.html">Home</a>
+  <a href="shop.html">Shop</a>
+  <a href="enquiry.html">Enquiry</a>
+  <a href="contact.html">About</a>
+</div>
+
+<main>
+  <section class="page-hero">
+    <div class="container reveal">
+      <div class="head-num">About</div>
+      <h1>Made slowly, <em>made close</em>.</h1>
+      <p>Meet the studio rhythm behind MilirThreads, then reach us for visits, custom work, gifting, or product questions.</p>
+    </div>
+  </section>
+
+  <section class="process">
+    <div class="container">
+      <div class="process-grid">
+        <div class="process-side reveal">
+          <div class="head-num">How</div>
+          <h2>How we <em>work</em>.</h2>
+          <p>Four principles guide every piece that leaves our studio.</p>
+        </div>
+        <div class="process-list">
+          <div class="process-item reveal">
+            <span class="p-num">01</span>
+            <div>
+              <h4>Sourced slowly</h4>
+              <p>Materials come from artisan clusters we've known for years. No fast-fashion middlemen.</p>
+            </div>
+          </div>
+          <div class="process-item reveal" style="animation-delay:0.1s">
+            <span class="p-num">02</span>
+            <div>
+              <h4>Made by hand</h4>
+              <p>Every kurta, every earring, every gift is finished by an artisan, not a machine.</p>
+            </div>
+          </div>
+          <div class="process-item reveal" style="animation-delay:0.2s">
+            <span class="p-num">03</span>
+            <div>
+              <h4>Wrapped with care</h4>
+              <p>Cloth wraps, handwritten notes, and thoughtful packing make each order gift-ready.</p>
+            </div>
+          </div>
+          <div class="process-item reveal" style="animation-delay:0.3s">
+            <span class="p-num">04</span>
+            <div>
+              <h4>Delivered safely</h4>
+              <p>Secure checkout, tracked shipping, and friendly support keep the experience simple.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-company">
+    <div class="container about-grid">
+      <div class="about-copy reveal">
+        <div class="head-num">About</div>
+        <h2>About <em>MilirThreads</em>.</h2>
+        <p>MilirThreads is a Chennai studio for handcrafted gifts, accessories, and women's clothing. We work in small batches with Indian artisans, choosing materials and finishes that feel personal instead of rushed.</p>
+      </div>
+      <div class="about-panel reveal" style="animation-delay:0.12s">
+        <h3>Studio details</h3>
+        <div class="contact-rows">
+          <div class="c-row">
+            <span class="c-label">Email</span>
+            <a href="mailto:hello@milirthreads.in">hello@milirthreads.in</a>
+          </div>
+          <div class="c-row">
+            <span class="c-label">Phone</span>
+            <a href="tel:+911234567890">+91 12345 67890</a>
+          </div>
+          <div class="c-row">
+            <span class="c-label">Studio</span>
+            <span>Mylapore, Chennai - 600004</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact" class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="f-col brand-col">
+        <img src="logo.png" alt="MilirThreads" class="brand-logo big">
+        <p>Handcrafted gifts, accessories and women's clothing - made slowly, made by hand in India.</p>
+      </div>
+
+      <div class="f-col">
+        <h5>Shop</h5>
+        <ul>
+          <li><a href="shop.html">Women's clothing</a></li>
+          <li><a href="shop.html">Accessories</a></li>
+          <li><a href="shop.html">Handcrafted gifts</a></li>
+          <li><a href="shop.html">New arrivals</a></li>
+          <li><a href="shop.html">Sale</a></li>
+        </ul>
+      </div>
+
+      <div class="f-col">
+        <h5>Help</h5>
+        <ul>
+          <li><a href="#">Shipping</a></li>
+          <li><a href="#">Returns</a></li>
+          <li><a href="#">Size guide</a></li>
+          <li><a href="#">Care</a></li>
+          <li><a href="enquiry.html">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="f-col">
+        <h5>Visit</h5>
+        <p class="address">
+          14, North Mada Street<br/>
+          Mylapore, Chennai 600004<br/>
+          Tamil Nadu, India
+        </p>
+        <p class="address">
+          <a href="mailto:hello@milirthreads.in">hello@milirthreads.in</a><br/>
+          <a href="tel:+911234567890">+91 12345 67890</a><br/>
+          Mon-Sat | 10:00 - 19:00
+        </p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 MilirThreads. Crafted in Chennai.</p>
+      <div class="f-pay">
+        <span>UPI</span><span>VISA</span><span>Razorpay</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<a href="https://wa.me/911234567890" class="float-wa" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 5L2 22l5.2-1.4c1.4.8 3.1 1.2 4.8 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+</a>
+
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" id="authClose" aria-label="Close">&times;</button>
+    <span class="modal-eyebrow" id="authEyebrow">Sign in</span>
+    <h3 id="authTitle">Welcome back</h3>
+    <p class="modal-sub" id="authSub">Log in to track your orders.</p>
+
+    <div class="google-signin-wrap" id="googleSigninWrap">
+      <div id="g_id_onload"
+           data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+           data-callback="handleGoogleSignIn"
+           data-auto_prompt="false"></div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-shape="pill"
+           data-theme="outline"
+           data-text="continue_with"
+           data-size="large"
+           data-width="320"></div>
+    </div>
+
+    <form id="otpForm" class="auth-form active">
+      <div class="otp-step" data-step="request">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="otp_email" required placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label>Phone number <span class="field-optional">(optional)</span></label>
+          <input type="tel" name="otp_phone" pattern="[0-9+\-\s]{10,15}" placeholder="+91 9XXXXXXXXX" autocomplete="tel" />
+          <span class="form-helper">No signup needed. We'll email a 6-digit code to your inbox.</span>
+        </div>
+        <button type="button" class="btn btn-primary full" id="otpSendBtn">
+          <span>Send OTP to email</span>
+        </button>
+      </div>
+      <div class="otp-step" data-step="verify" hidden>
+        <p class="otp-sent-to" id="otpSentTo"></p>
+        <div class="field">
+          <label>Enter 6-digit code</label>
+          <input type="text" name="otp" required pattern="[0-9]{6}" maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
+        </div>
+        <button type="submit" class="btn btn-primary full"><span>Verify &amp; sign in</span></button>
+        <div class="otp-meta">
+          <span id="otpCountdown" class="otp-countdown"></span>
+          <button type="button" class="link-btn" id="otpResendBtn" disabled>Resend OTP</button>
+        </div>
+        <button type="button" class="link-btn" id="otpChangeBtn">Use a different phone/email</button>
+      </div>
+      <p class="form-note" id="otpNote"></p>
+    </form>
+
+    <p class="auth-divider"><span>or</span></p>
+
+    <div class="auth-tabs auth-tabs-secondary">
+      <button class="auth-tab" data-tab="login" type="button">Login with password</button>
+      <button class="auth-tab" data-tab="signup" type="button">Sign up</button>
+    </div>
+
+    <form id="loginForm" class="auth-form">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn-primary full">
+        <span>Log in</span>
+      </button>
+      <div class="auth-extras">
+        <button type="button" class="link-btn" id="forgotLink">Forgot password?</button>
+      </div>
+      <p class="form-note" id="loginNote"></p>
+    </form>
+
+    <form id="signupForm" class="auth-form">
+      <div class="field">
+        <label>Full name</label>
+        <input type="text" name="name" required autocomplete="name" />
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Phone</label>
+          <input type="tel" name="phone" required autocomplete="tel" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email" required autocomplete="email" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" required minlength="6" autocomplete="new-password" />
+      </div>
+      <button type="submit" class="btn btn-primary full">
+        <span>Create account</span>
+      </button>
+      <p class="form-note" id="signupNote"></p>
+    </form>
+
+    <form id="forgotForm" class="auth-form">
+      <div class="forgot-step" data-step="email">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email" required autocomplete="email" />
+        </div>
+        <button type="button" class="btn btn-primary full" id="forgotSendBtn">
+          <span>Send reset code</span>
+        </button>
+      </div>
+      <div class="forgot-step" data-step="reset" hidden>
+        <div class="field">
+          <label>6-digit code</label>
+          <input type="text" name="otp" required pattern="[0-9]{6}" maxlength="6" inputmode="numeric" autocomplete="one-time-code" />
+        </div>
+        <div class="field">
+          <label>New password</label>
+          <input type="password" name="new_password" required minlength="6" autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn btn-primary full">
+          <span>Reset password</span>
+        </button>
+      </div>
+      <div class="auth-extras">
+        <button type="button" class="link-btn" id="backToLoginLink">&larr; Back to login</button>
+      </div>
+      <p class="form-note" id="forgotNote"></p>
+    </form>
+  </div>
+</div>
+
+<aside class="account-drawer" id="accountPanel" aria-hidden="true">
+  <div class="account-inner">
+    <header class="cart-head">
+      <div>
+        <span class="modal-eyebrow">Your account</span>
+        <h3 id="accountName">Welcome</h3>
+        <p class="account-meta" id="accountMeta"></p>
+      </div>
+      <button class="modal-close" id="accountClose" aria-label="Close">&times;</button>
+    </header>
+    <div class="account-actions">
+      <button class="account-action" id="viewOrdersBtn"><span>My orders</span></button>
+      <button class="account-action admin-only" id="adminPanelBtn" hidden><span>Admin dashboard</span></button>
+      <button class="account-action danger" id="logoutBtn"><span>Log out</span></button>
+    </div>
+  </div>
+</aside>
+
+<div class="modal-overlay" id="ordersModal">
+  <div class="modal modal-wide">
+    <button class="modal-close" id="ordersClose" aria-label="Close">&times;</button>
+    <span class="modal-eyebrow">History</span>
+    <h3 id="ordersTitle">Your orders</h3>
+    <p class="modal-sub" id="ordersSub">All purchases linked to your email.</p>
+    <div class="orders-list" id="ordersList"><div class="orders-empty">Loading&hellip;</div></div>
+  </div>
+</div>
+
+<aside class="cart-drawer" id="cartDrawer" aria-hidden="true">
+  <div class="cart-drawer-inner">
+    <header class="cart-head">
+      <div>
+        <span class="modal-eyebrow">Your bag</span>
+        <h3 id="cartTitle">0 items</h3>
+      </div>
+      <button class="modal-close" id="cartClose" aria-label="Close cart">&times;</button>
+    </header>
+    <div class="cart-items" id="cartItems"></div>
+    <footer class="cart-foot">
+      <div class="cart-total">
+        <span>Subtotal</span>
+        <strong id="cartTotal">&#8377;0</strong>
+      </div>
+      <button class="btn btn-primary full" id="cartCheckout">
+        <span>Checkout</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+      <p class="cart-note">Free shipping on orders &#8377;999+</p>
+    </footer>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

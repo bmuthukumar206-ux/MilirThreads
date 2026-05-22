@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard | MilirThreads</title>
+<meta name="robots" content="noindex" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="admin-page">
+
+<header class="admin-nav">
+  <span class="brand">
+    <img src="logo.png" alt="" class="brand-logo">
+  </span>
+  <div class="admin-nav-meta">
+    <span class="admin-eyebrow">Admin</span>
+    <h1 id="adminGreeting">Dashboard</h1>
+  </div>
+  <nav class="admin-tabs">
+    <a href="admin.html" class="admin-tab active">Home</a>
+    <a href="admin-products.html" class="admin-tab">Add products</a>
+  </nav>
+  <div class="admin-nav-actions">
+    <button class="btn btn-ghost" id="refreshBtn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      Refresh
+    </button>
+    <button class="btn btn-primary" id="adminLogout" type="button">Log out</button>
+  </div>
+</header>
+
+<main class="admin-main container">
+
+  <section class="admin-grid stats-row">
+    <article class="stat-card" data-tone="ink">
+      <span class="stat-label">Total leads</span>
+      <strong id="statLeads">—</strong>
+      <span class="stat-sub" id="statLeadsSub"></span>
+    </article>
+    <article class="stat-card" data-tone="green">
+      <span class="stat-label">Qualified leads</span>
+      <strong id="statQualified">—</strong>
+      <span class="stat-sub" id="statQualifiedSub"></span>
+    </article>
+    <article class="stat-card" data-tone="accent">
+      <span class="stat-label">Revenue till now</span>
+      <strong id="statRevenue">—</strong>
+      <span class="stat-sub" id="statRevenueSub"></span>
+    </article>
+    <article class="stat-card" data-tone="warm">
+      <span class="stat-label">Registered users</span>
+      <strong id="statUsers">—</strong>
+      <span class="stat-sub" id="statUsersSub"></span>
+    </article>
+  </section>
+
+  <section class="admin-grid two-col">
+    <article class="admin-card">
+      <header>
+        <h2>Leads by interest</h2>
+        <span class="admin-eyebrow">Source breakdown</span>
+      </header>
+      <div class="chart-wrap"><canvas id="interestChart"></canvas></div>
+    </article>
+
+    <article class="admin-card">
+      <header>
+        <h2>Sales by category</h2>
+        <span class="admin-eyebrow">Revenue mix</span>
+      </header>
+      <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+    </article>
+  </section>
+
+  <section class="admin-grid two-col">
+    <article class="admin-card">
+      <header>
+        <h2>Lead qualification</h2>
+        <span class="admin-eyebrow">Conversion mix</span>
+      </header>
+      <div class="chart-wrap chart-wrap-small"><canvas id="qualificationChart"></canvas></div>
+    </article>
+    <article class="admin-card">
+      <header>
+        <h2>Order status</h2>
+        <span class="admin-eyebrow">Where things stand</span>
+      </header>
+      <div class="chart-wrap chart-wrap-small"><canvas id="statusChart"></canvas></div>
+    </article>
+  </section>
+
+  <section class="admin-card approvals-card" id="approvalsCard" hidden>
+    <header>
+      <h2>Approvals raised <span class="badge-pill" id="approvalsBadge">0</span></h2>
+      <span class="admin-eyebrow">Action required</span>
+    </header>
+    <div class="approvals-list" id="approvalsList"></div>
+  </section>
+
+  <section class="admin-grid two-col">
+    <article class="admin-card">
+      <header>
+        <h2>Recent orders</h2>
+        <span class="admin-eyebrow">Newest 8</span>
+      </header>
+      <div class="orders-list" id="recentOrders"><div class="orders-empty">Loading…</div></div>
+    </article>
+
+    <article class="admin-card">
+      <header>
+        <h2>Recent leads</h2>
+        <span class="admin-eyebrow">Qualify or dismiss</span>
+      </header>
+      <div class="leads-list" id="recentLeads"><div class="orders-empty">Loading…</div></div>
+    </article>
+  </section>
+
+  <section class="admin-card">
+    <header>
+      <h2>New signups</h2>
+      <span class="admin-eyebrow">Newest 5</span>
+    </header>
+    <div class="users-list" id="recentUsers"><div class="orders-empty">Loading…</div></div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="js/pages/admin.js"></script>
+</body>
+</html>
