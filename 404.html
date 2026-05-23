@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>Redirecting… | MilirThreads</title>
+<meta http-equiv="refresh" content="1; url=./index.html" />
+<script>
+  /* GitHub Pages serves this page (with a 404 status) for any path that
+     doesn't match a file — e.g. a stale, capital-I "Index.html" link, an
+     old bookmark, or a mistyped page. Instead of a dead end, send the
+     visitor to the real lowercase home page. */
+  (function () {
+    var parts = location.pathname.split('/');
+    // Project site → base is "/<repo>/"; user/org site → base is "/".
+    var base = parts.length > 2 ? '/' + parts[1] + '/' : '/';
+    location.replace(base + 'index.html');
+  })();
+</script>
+
+<style>
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    background: #f2f6fb; color: #3f4b5f;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; margin: 0; text-align: center;
+  }
+  .box { padding: 32px; }
+  h1 { font-size: 40px; margin: 0 0 8px; color: #05070b; font-weight: 600; }
+  a { color: #1f7a5c; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1>MilirThreads</h1>
+    <p>Taking you to the <a href="./index.html">home page</a>…</p>
+  </div>
+</body>
+</html>

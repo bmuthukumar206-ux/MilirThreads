@@ -15,22 +15,55 @@
 </head>
 <body class="admin-page">
 
-<header class="admin-nav">
+<aside class="admin-sidebar" id="adminSidebar">
   <a href="admin.html" class="admin-brand" aria-label="MilirThreads admin">
-    <img src="logo.png" alt="" class="brand-logo">
+    <img src="logo.png" alt="">
   </a>
-  <nav class="admin-tabs">
-    <a href="admin.html" class="admin-tab active">Dashboard</a>
-    <a href="admin-products.html" class="admin-tab">Products</a>
-    <a href="admin-orders.html" class="admin-tab">Orders</a>
-    <a href="admin-calendar.html" class="admin-tab">Calendar</a>
+  <nav class="sidebar-nav">
+    <span class="sidebar-section">General</span>
+    <a href="admin.html" class="sidebar-link active">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="admin-products.html" class="sidebar-link">
+      <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span>Products</span>
+    </a>
+    <a href="admin-orders.html" class="sidebar-link">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+      <span>Orders</span>
+    </a>
+    <a href="admin-calendar.html" class="sidebar-link">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span>Calendar</span>
+    </a>
+    <span class="sidebar-section">Account</span>
+    <button type="button" class="sidebar-link sidebar-link-logout" id="adminLogout">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>Log out</span>
+    </button>
   </nav>
-  <div class="admin-nav-actions">
-    <button class="btn btn-primary" id="adminLogout" type="button">Log out</button>
+</aside>
+
+<header class="admin-topbar">
+  <button class="admin-menu-btn" id="adminMenuBtn" type="button" aria-label="Open menu">
+    <svg viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+  <div class="topbar-nav">
+    <button class="topbar-nav-btn" type="button" onclick="history.back()" aria-label="Back">&lsaquo;</button>
+    <button class="topbar-nav-btn" type="button" onclick="history.forward()" aria-label="Forward">&rsaquo;</button>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-user">
+    <span class="topbar-user-avatar" id="topbarUserAvatar">A</span>
+    <div class="topbar-user-meta">
+      <strong id="topbarUserName">Admin</strong>
+      <span id="topbarUserRole">Administrator</span>
+    </div>
   </div>
 </header>
 
-<main class="admin-main container">
+<main class="admin-main">
 
   <div class="admin-head">
     <div class="admin-head-text">
@@ -141,6 +174,41 @@
 
 <div class="toast" id="toast"></div>
 
+<script>
+  // Mobile sidebar toggle + populate the topbar user chip from session.
+  (function () {
+    var btn = document.getElementById('adminMenuBtn');
+    var sb = document.getElementById('adminSidebar');
+    var page = document.querySelector('.admin-page');
+    if (btn && sb && page) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        sb.classList.toggle('open');
+        page.classList.toggle('sidebar-open');
+      });
+      document.addEventListener('click', function (e) {
+        if (!page.classList.contains('sidebar-open')) return;
+        if (sb.contains(e.target)) return;
+        sb.classList.remove('open');
+        page.classList.remove('sidebar-open');
+      });
+    }
+    try {
+      var raw = localStorage.getItem('milir_user');
+      if (!raw) return;
+      var u = JSON.parse(raw);
+      var name = (u && u.name) || (u && u.email ? u.email.split('@')[0] : 'Admin');
+      var role = u && u.role === 'admin' ? 'Administrator' : (u && u.role) || 'User';
+      var initial = (name.trim()[0] || 'A').toUpperCase();
+      var n = document.getElementById('topbarUserName');
+      var r = document.getElementById('topbarUserRole');
+      var a = document.getElementById('topbarUserAvatar');
+      if (n) n.textContent = name;
+      if (r) r.textContent = role;
+      if (a) a.textContent = initial;
+    } catch (e) { /* ignore */ }
+  })();
+</script>
 <script type="module" src="js/pages/admin.js"></script>
 </body>
 </html>
