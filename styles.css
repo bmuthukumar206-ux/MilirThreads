@@ -11,8 +11,8 @@
   --ink-3: #738197;
   --line: #dce5f2;
   --line-2: #c7d3e3;
-  --accent: #0f62fe;
-  --accent-soft: #b8d4ff;
+  --accent: #1f7a5c;
+  --accent-soft: #cfe8dc;
   --white: #ffffff;
   --dark: #05070b;
 
@@ -347,9 +347,9 @@ em { font-style: italic; font-family: var(--font-display); font-weight: 300; }
   color: var(--white);
 }
 .btn-primary:hover {
-  background: #054ada;
+  background: #155c44;
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(15, 98, 254, 0.22);
+  box-shadow: 0 12px 28px rgba(31, 122, 92, 0.26);
 }
 .btn-ghost {
   background: transparent;
@@ -454,7 +454,7 @@ em { font-style: italic; font-family: var(--font-display); font-weight: 300; }
   margin-left: 4px;
   transition: background 0.25s;
 }
-.tag-btn:hover { background: #054ada; }
+.tag-btn:hover { background: #155c44; }
 
 /* ============ LOGO STRIP ============ */
 .logo-strip {
@@ -785,7 +785,7 @@ section { position: relative; }
   transition: background 0.25s var(--ease), transform 0.25s var(--ease);
 }
 .add-cart-btn:hover {
-  background: #054ada;
+  background: #155c44;
   transform: translateY(-1px);
 }
 
@@ -1734,7 +1734,7 @@ section { position: relative; }
 }
 .sort-option.active {
   border-color: var(--accent);
-  background: rgba(15, 98, 254, 0.06);
+  background: rgba(31, 122, 92, 0.07);
   color: var(--accent);
 }
 .sort-option.active .sort-tick { opacity: 1; }
@@ -2220,7 +2220,7 @@ section { position: relative; }
 .product-form .field textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(15, 98, 254, 0.12);
+  box-shadow: 0 0 0 3px rgba(31, 122, 92, 0.14);
 }
 .product-form .field textarea { resize: vertical; min-height: 96px; }
 .product-form .field select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(135deg, var(--ink-2) 50%, transparent 50%); background-position: calc(100% - 16px) 18px, calc(100% - 11px) 18px; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
@@ -2248,7 +2248,7 @@ section { position: relative; }
 }
 .image-drop:hover, .image-drop.dragging {
   border-color: var(--accent);
-  background: rgba(15, 98, 254, 0.04);
+  background: rgba(31, 122, 92, 0.05);
 }
 .image-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
@@ -2324,7 +2324,7 @@ section { position: relative; }
 .product-filters .field select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(15, 98, 254, 0.12);
+  box-shadow: 0 0 0 3px rgba(31, 122, 92, 0.14);
 }
 .product-filters .btn {
   padding: 9px 16px;
@@ -2535,7 +2535,7 @@ section { position: relative; }
 }
 .bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), #054ada);
+  background: linear-gradient(90deg, var(--accent), #155c44);
   border-radius: 999px;
   transition: width 0.6s var(--ease-out);
 }
@@ -2637,7 +2637,7 @@ section { position: relative; }
   font-weight: 600;
 }
 .role-user { background: var(--bg-2); color: var(--ink-2); }
-.role-admin { background: rgba(15, 98, 254, 0.12); color: var(--accent); }
+.role-admin { background: rgba(31, 122, 92, 0.14); color: var(--accent); }
 
 @media (max-width: 1024px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -2668,7 +2668,7 @@ section { position: relative; }
 }
 .search-bar:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(15, 98, 254, 0.12);
+  box-shadow: 0 0 0 3px rgba(31, 122, 92, 0.14);
 }
 .search-bar svg { color: var(--ink-3); flex: 0 0 auto; }
 .search-bar input {
@@ -3468,7 +3468,7 @@ a.order-item:hover {
 }
 .kanban-col.drag-over {
   border-color: var(--accent);
-  background: rgba(15, 98, 254, 0.06);
+  background: rgba(31, 122, 92, 0.07);
 }
 .kanban-col-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -4257,3 +4257,58 @@ a.order-item:hover {
   padding: 7px 14px !important;
   font-size: 12px !important;
 }
+
+/* ============================================================
+   CALENDAR — order rows in the day timeline
+   ============================================================ */
+.cal-event-order {
+  --c: #475569;
+  --c-soft: #e2e8f0;
+  cursor: pointer;
+  position: relative;
+}
+.cal-event-order:hover {
+  border-color: var(--accent);
+  background: var(--white);
+}
+.cal-event-order:active { transform: translateY(1px); }
+.cal-event-order:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.cal-event-arrow {
+  align-self: center;
+  color: var(--ink-3);
+  font-size: 20px; line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.18s var(--ease), transform 0.18s var(--ease);
+}
+.cal-event-order:hover .cal-event-arrow {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+.cal-order-line {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+.cal-order-amt {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+.cal-order-pill {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 9px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.cal-order-pill.ds-pending   { background: #fcf0db; color: #8a5a14; }
+.cal-order-pill.ds-out       { background: #d6e4fb; color: #1e4798; }
+.cal-order-pill.ds-delivered { background: #d6efe3; color: #155c44; }
