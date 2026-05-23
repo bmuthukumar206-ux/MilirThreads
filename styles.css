@@ -4069,3 +4069,191 @@ a.order-item:hover {
   .topbar-user-meta { display: none; }
   .topbar-user { padding: 4px; }
 }
+
+/* ============================================================
+   ADMIN: DASHBOARD v3 — sales chart + embedded calendar widget
+   ============================================================ */
+.stats-row-3 { grid-template-columns: repeat(3, 1fr); }
+
+.dash-main {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.dash-sales-card .chart-wrap { height: 320px; }
+
+/* The dashboard calendar widget — tighter than the standalone calendar page. */
+.dash-calendar { gap: 10px; }
+.dash-calendar-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px;
+}
+.dash-calendar-head h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.dash-cal-toolbar {
+  display: flex; align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+}
+.dash-cal-toolbar .cal-nav { display: flex; align-items: center; gap: 4px; }
+.dash-cal-toolbar .cal-nav strong {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  min-width: 120px; text-align: center;
+}
+.dash-cal-toolbar .cal-arrow { width: 26px; height: 26px; font-size: 14px; }
+.dash-cal-toolbar .cal-today-btn { padding: 5px 10px; font-size: 11px; margin-left: auto; }
+.dash-calendar .cal-weekdays { gap: 3px; }
+.dash-calendar .cal-weekdays span { padding: 1px 0; font-size: 9.5px; }
+.dash-cal-grid { gap: 3px; }
+.dash-cal-grid .cal-cell { padding: 4px; border-radius: 7px; }
+.dash-cal-grid .cal-cell-num { font-size: 11.5px; min-width: 18px; height: 18px; }
+.dash-cal-grid .cal-dot { width: 5px; height: 5px; }
+.dash-cal-day-head {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  margin-top: 4px;
+}
+.dash-cal-day-head h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.dash-cal-day-head .cal-day-count { font-size: 10.5px; }
+.dash-cal-timeline { max-height: 220px; }
+.dash-cal-timeline .cal-event { padding: 9px 10px; gap: 9px; }
+.dash-cal-timeline .cal-event-icon { width: 32px; height: 32px; border-radius: 8px; }
+.dash-cal-timeline .cal-event-icon svg { width: 15px; height: 15px; }
+.dash-cal-timeline .cal-event-top strong { font-size: 13px; }
+.dash-cal-timeline .cal-event-time { font-size: 10.5px; }
+.dash-cal-timeline .cal-empty-day { padding: 22px 10px; font-size: 12px; }
+
+@media (max-width: 1100px) {
+  .dash-main { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   ADMIN: DATA TABLES (transactions + users)
+   ============================================================ */
+.data-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+}
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+.data-table thead th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  padding: 14px 14px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.data-table thead th.num { text-align: right; }
+.data-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  color: var(--ink);
+}
+.data-table tbody tr:last-child td { border-bottom: 0; }
+.data-table tbody tr:hover { background: var(--bg-2); }
+.data-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table td.cell-date { color: var(--ink-2); white-space: nowrap; font-size: 12px; }
+.data-table td.cell-pid { font-family: 'Courier New', monospace; font-size: 11.5px; color: var(--ink-2); }
+.data-table td.cell-products {
+  max-width: 260px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.data-table .cell-sub {
+  display: block;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.users-search {
+  border: 1px solid var(--line-2);
+  border-radius: 100px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--white);
+  min-width: 240px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.users-search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(31, 122, 92, 0.13);
+}
+
+/* ============================================================
+   ADMIN: SHIPPING CARDS  (admin-shipping.html)
+   ============================================================ */
+.shipping-list {
+  display: flex; flex-direction: column; gap: 10px;
+  max-height: 64vh;
+  overflow-y: auto;
+}
+.ship-card {
+  display: flex; gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--white);
+  box-shadow: 0 1px 2px rgba(20, 50, 40, 0.04);
+}
+.ship-card-thumbs { display: flex; gap: 4px; flex-shrink: 0; }
+.ship-card-thumbs img,
+.ship-card-thumbs .kanban-thumb-ph,
+.ship-card-thumbs .kanban-thumb-more {
+  width: 44px; height: 44px;
+  border-radius: 7px;
+  object-fit: cover;
+}
+.ship-card-body { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ship-card-title {
+  font-size: 13px; font-weight: 600;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  line-clamp: 2; overflow: hidden;
+}
+.ship-card-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; color: var(--ink-2);
+}
+.ship-card-amt {
+  font-family: var(--font-display);
+  font-weight: 600; color: var(--ink);
+}
+.ship-card-addr {
+  font-size: 11.5px; color: var(--ink-3);
+  line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  line-clamp: 2; overflow: hidden;
+}
+.ship-card-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-top: 4px;
+}
+.ship-card-date { font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.ship-card-btn {
+  padding: 7px 14px !important;
+  font-size: 12px !important;
+}

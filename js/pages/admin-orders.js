@@ -43,7 +43,6 @@ import { loadSheetProducts } from '../sheet-products.js';
   };
 
   let orders = [];          // board orders (paid only); index = card data-idx
-  let draggedIdx = null;
 
   // -------------------- LOAD --------------------
   async function load() {
@@ -95,7 +94,7 @@ import { loadSheetProducts } from '../sheet-products.js';
     const next = STAGES[sIdx + 1];
 
     return `
-      <article class="kanban-card" draggable="true" data-idx="${idx}">
+      <article class="kanban-card" data-idx="${idx}">
         <div class="kanban-card-thumbs">${thumbs || '<span class="kanban-thumb-ph">?</span>'}${more}</div>
         <div class="kanban-card-body">
           <strong class="kanban-card-title">${title}</strong>
@@ -125,7 +124,7 @@ import { loadSheetProducts } from '../sheet-products.js';
       const idxs = buckets[s.id];
       list.innerHTML = idxs.length
         ? idxs.map(idx => cardHtml(orders[idx], idx)).join('')
-        : '<p class="kanban-empty">Drop orders here</p>';
+        : '<p class="kanban-empty">No orders in this stage</p>';
       $(s.countId).textContent = idxs.length;
     });
 
@@ -176,43 +175,10 @@ import { loadSheetProducts } from '../sheet-products.js';
     }
   }
 
-  // -------------------- DRAG & DROP --------------------
+  // -------------------- WIRE CARDS (move buttons only) --------------------
   function wireCards() {
-    document.querySelectorAll('.kanban-card').forEach(card => {
-      card.addEventListener('dragstart', (e) => {
-        draggedIdx = Number(card.dataset.idx);
-        card.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        try { e.dataTransfer.setData('text/plain', card.dataset.idx); } catch (err) { /* IE */ }
-      });
-      card.addEventListener('dragend', () => {
-        draggedIdx = null;
-        card.classList.remove('dragging');
-        document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
-      });
-    });
-
     document.querySelectorAll('.kanban-move-btn').forEach(btn => {
       btn.addEventListener('click', () => moveOrder(Number(btn.dataset.idx), btn.dataset.stage));
-    });
-  }
-
-  function wireColumns() {
-    document.querySelectorAll('.kanban-col').forEach(col => {
-      col.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        col.classList.add('drag-over');
-      });
-      col.addEventListener('dragleave', (e) => {
-        if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
-      });
-      col.addEventListener('drop', (e) => {
-        e.preventDefault();
-        col.classList.remove('drag-over');
-        const idx = draggedIdx != null ? draggedIdx : Number(e.dataTransfer.getData('text/plain'));
-        if (!Number.isNaN(idx)) moveOrder(idx, col.dataset.stage);
-      });
     });
   }
 
@@ -223,6 +189,5 @@ import { loadSheetProducts } from '../sheet-products.js';
     location.replace('index.html');
   });
 
-  wireColumns();
   load();
 })();

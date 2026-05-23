@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Admin Dashboard | MilirThreads</title>
+<title>Shipping | MilirThreads Admin</title>
 <meta name="robots" content="noindex" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="styles.css" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="admin-page">
 
@@ -21,7 +20,7 @@
   </a>
   <nav class="sidebar-nav">
     <span class="sidebar-section">General</span>
-    <a href="admin.html" class="sidebar-link active">
+    <a href="admin.html" class="sidebar-link">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       <span>Dashboard</span>
     </a>
@@ -38,7 +37,7 @@
       <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
       <span>Transactions</span>
     </a>
-    <a href="admin-shipping.html" class="sidebar-link">
+    <a href="admin-shipping.html" class="sidebar-link active">
       <svg viewBox="0 0 24 24"><path d="M3 16V5h11v11"/><path d="M14 8h4l3 4v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
       <span>Shipping</span>
     </a>
@@ -73,139 +72,63 @@
 </header>
 
 <main class="admin-main">
-
   <div class="admin-head">
     <div class="admin-head-text">
       <span class="admin-eyebrow">Admin</span>
-      <h1 id="adminGreeting">Dashboard</h1>
-      <p class="admin-head-sub">Your store at a glance — revenue, orders and the schedule.</p>
+      <h1>Shipping</h1>
+      <p class="admin-head-sub">Orders ready for pickup and orders already shipped</p>
     </div>
     <div class="admin-head-actions">
       <button class="btn btn-ghost" id="refreshBtn" type="button">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
         Refresh
       </button>
-      <button class="btn btn-primary" id="exportBtn" type="button">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 5 17 10"/><line x1="12" y1="5" x2="12" y2="15"/></svg>
-        Export
-      </button>
     </div>
   </div>
 
-  <section class="admin-grid stats-row dash-stats">
-    <article class="stat-card" data-tone="accent">
-      <span class="stat-label">Total revenue</span>
-      <strong id="statRevenue">—</strong>
-      <span class="stat-sub" id="statRevenueSub"></span>
-    </article>
-    <article class="stat-card" data-tone="ink">
-      <span class="stat-label">Total customers</span>
-      <strong id="statCustomers">—</strong>
-      <span class="stat-sub" id="statCustomersSub"></span>
-    </article>
+  <section class="admin-grid stats-row stats-row-3">
     <article class="stat-card" data-tone="warm">
-      <span class="stat-label">Total orders</span>
-      <strong id="statOrdersCount">—</strong>
-      <span class="stat-sub" id="statOrdersSub"></span>
+      <span class="stat-label">Ready for pickup</span>
+      <strong id="shipReadyCount">—</strong>
+      <span class="stat-sub">Awaiting dispatch</span>
+    </article>
+    <article class="stat-card" data-tone="accent">
+      <span class="stat-label">Shipped</span>
+      <strong id="shipOutCount">—</strong>
+      <span class="stat-sub">On the way</span>
+    </article>
+    <article class="stat-card" data-tone="green">
+      <span class="stat-label">Delivered</span>
+      <strong id="shipDeliveredCount">—</strong>
+      <span class="stat-sub">Completed</span>
     </article>
   </section>
 
-  <section class="admin-grid dash-main">
-    <article class="admin-card dash-sales-card">
+  <section class="admin-grid two-col">
+    <article class="admin-card">
       <header>
-        <div>
-          <h2>Sales analytics</h2>
-          <span class="admin-eyebrow">Revenue per day · last 30 days</span>
-        </div>
+        <h2>Ready for pickup <span class="badge-pill" id="shipReadyBadge">0</span></h2>
+        <span class="admin-eyebrow">Click "Mark shipped" once dispatched</span>
       </header>
-      <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
+      <div class="shipping-list" id="shipReadyList">
+        <p class="orders-empty">Loading…</p>
+      </div>
     </article>
-
-    <article class="admin-card dash-calendar">
-      <header class="dash-calendar-head">
-        <div>
-          <span class="admin-eyebrow">Schedule</span>
-          <h2>Calendar</h2>
-        </div>
-        <button class="btn btn-ghost cal-day-add" id="newEntryBtn" type="button">+ New</button>
+    <article class="admin-card">
+      <header>
+        <h2>Shipped <span class="badge-pill" id="shipOutBadge">0</span></h2>
+        <span class="admin-eyebrow">Click "Mark delivered" when received</span>
       </header>
-      <div class="cal-toolbar dash-cal-toolbar">
-        <div class="cal-nav">
-          <button class="cal-arrow" id="calPrev" type="button" aria-label="Previous month">&lsaquo;</button>
-          <strong id="calMonthLabel">—</strong>
-          <button class="cal-arrow" id="calNext" type="button" aria-label="Next month">&rsaquo;</button>
-        </div>
-        <button class="cal-today-btn" id="calToday" type="button">Today</button>
-      </div>
-      <div class="cal-weekdays">
-        <span>M</span><span>T</span><span>W</span><span>T</span>
-        <span>F</span><span>S</span><span>S</span>
-      </div>
-      <div class="cal-grid dash-cal-grid" id="calGrid"></div>
-      <div class="dash-cal-day-head">
-        <div>
-          <h3 id="calDayTitle">Select a day</h3>
-          <span class="cal-day-count" id="calDayCount"></span>
-        </div>
-      </div>
-      <div class="cal-timeline dash-cal-timeline" id="calTimeline">
-        <p class="cal-empty-day">Loading calendar…</p>
+      <div class="shipping-list" id="shipOutList">
+        <p class="orders-empty">Loading…</p>
       </div>
     </article>
   </section>
-
-  <section class="admin-card">
-    <header>
-      <h2>Recent orders</h2>
-      <span class="admin-eyebrow">Newest 8</span>
-    </header>
-    <div class="orders-list" id="recentOrders"><div class="orders-empty">Loading…</div></div>
-  </section>
-
 </main>
-
-<div class="modal-overlay" id="entryModal">
-  <div class="modal cal-modal">
-    <button class="modal-close" id="entryClose" type="button" aria-label="Close">&times;</button>
-    <span class="modal-eyebrow">Schedule</span>
-    <h3 id="entryModalTitle">New calendar entry</h3>
-    <form id="entryForm" class="cal-form" novalidate>
-      <div class="form-row">
-        <div class="field">
-          <label>Date</label>
-          <input type="date" name="date" required />
-        </div>
-        <div class="field">
-          <label>Time <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
-          <input type="time" name="time" />
-        </div>
-      </div>
-      <div class="field">
-        <label>Title</label>
-        <input type="text" name="title" required placeholder="e.g. Diwali collection launch" />
-      </div>
-      <div class="field">
-        <label>Category</label>
-        <select name="category">
-          <option value="order">Order</option>
-          <option value="event">Event</option>
-          <option value="launch">Launch</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Notes <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
-        <textarea name="notes" rows="3" placeholder="Any extra detail…"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary full" id="entrySubmit">Save entry</button>
-      <p class="form-note" id="entryNote"></p>
-    </form>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-  // Mobile sidebar toggle + populate the topbar user chip from session.
   (function () {
     var btn = document.getElementById('adminMenuBtn');
     var sb = document.getElementById('adminSidebar');
@@ -239,7 +162,6 @@
     } catch (e) { /* ignore */ }
   })();
 </script>
-<script type="module" src="js/pages/admin.js"></script>
-<script type="module" src="js/pages/admin-calendar.js"></script>
+<script type="module" src="js/pages/admin-shipping.js"></script>
 </body>
 </html>
