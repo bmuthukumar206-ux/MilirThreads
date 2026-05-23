@@ -59,7 +59,13 @@ import { postAuth, fetchAllOrders } from '../api.js';
       }
 
       lastOrders = ordersRes.orders || [];
-      render(statsRes, lastOrders);
+      try {
+        render(statsRes, lastOrders);
+      } catch (err) {
+        // A bad sub-render (e.g. Chart.js hiccup) shouldn't blow up the whole page.
+        console.error('Dashboard render error:', err);
+        showToast('Dashboard partially loaded — ' + err.message, 'warn');
+      }
       showToast('Dashboard updated', 'success');
     } catch (err) {
       showFatal('Network error: ' + err.message);
@@ -138,6 +144,10 @@ import { postAuth, fetchAllOrders } from '../api.js';
   // Daily revenue bar chart for the last 30 days, drawn from orders.
   function drawSalesChart(orders) {
     if (!$('salesChart')) return;
+    try { _drawSalesChart(orders); }
+    catch (err) { console.warn('Sales chart skipped:', err); }
+  }
+  function _drawSalesChart(orders) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const labels = [], keys = [];
@@ -181,6 +191,10 @@ import { postAuth, fetchAllOrders } from '../api.js';
 
   // Legacy charts — only render when their canvases exist on the page.
   function drawLegacyCharts(stats) {
+    try { _drawLegacyCharts(stats); }
+    catch (err) { console.warn('Legacy chart skipped:', err); }
+  }
+  function _drawLegacyCharts(stats) {
     const interestEntries = Object.entries(stats.leads.byInterest || {});
     if (interestEntries.length && $('interestChart')) {
       makeChart('interestChart', 'bar',
