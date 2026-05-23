@@ -106,7 +106,8 @@ import { postAuth } from '../api.js';
   }
 
   function renderCalendar() {
-    $('calMonthLabel').textContent = `${MONTHS[viewMonth]} ${viewYear}`;
+    const lbl = $('calMonthLabel');
+    if (lbl) lbl.textContent = `${MONTHS[viewMonth]} ${viewYear}`;
     const byDate = entriesByDate();
 
     // First cell = Monday on/just before the 1st of the month.
@@ -139,7 +140,8 @@ import { postAuth } from '../api.js';
           <span class="cal-cell-dots">${dots}</span>
         </div>`;
     }
-    $('calGrid').innerHTML = html;
+    const grid = $('calGrid');
+    if (grid) grid.innerHTML = html;
   }
 
   // ----- render: day timeline -----
@@ -152,11 +154,16 @@ import { postAuth } from '../api.js';
     const d = parseYmd(selectedDate);
     const longOpts = { weekday: 'long', day: 'numeric', month: 'short' };
     const dayText = d ? d.toLocaleDateString('en-IN', longOpts) : (selectedDate || '');
-    $('calDayTitle').textContent = selectedDate === todayStr ? `Today · ${dayText}` : dayText;
-    $('calDayCount').textContent = !backendReady ? ''
-      : (list.length ? `${list.length} scheduled` : 'Nothing scheduled');
+    const titleEl = $('calDayTitle');
+    if (titleEl) titleEl.textContent = selectedDate === todayStr ? `Today · ${dayText}` : dayText;
+    const countEl = $('calDayCount');
+    if (countEl) {
+      countEl.textContent = !backendReady ? ''
+        : (list.length ? `${list.length} scheduled` : 'Nothing scheduled');
+    }
 
     const wrap = $('calTimeline');
+    if (!wrap) return;
 
     if (!backendReady) {
       wrap.innerHTML = `
@@ -206,22 +213,23 @@ import { postAuth } from '../api.js';
   const note = $('entryNote');
 
   function openModal(dateStr) {
+    if (!form || !modal) return;
     form.reset();
-    note.textContent = '';
-    note.className = 'form-note';
-    form.elements.date.value = dateStr || selectedDate || todayStr;
-    form.elements.category.value = 'event';
+    if (note) { note.textContent = ''; note.className = 'form-note'; }
+    if (form.elements.date) form.elements.date.value = dateStr || selectedDate || todayStr;
+    if (form.elements.category) form.elements.category.value = 'event';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-    setTimeout(() => form.elements.title.focus(), 60);
+    setTimeout(() => { if (form.elements.title) form.elements.title.focus(); }, 60);
   }
   function closeModal() {
+    if (!modal) return;
     modal.classList.remove('active');
     document.body.style.overflow = '';
   }
 
   // ----- add -----
-  form.addEventListener('submit', async (e) => {
+  if (form) form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(form);
     const payload = {
@@ -292,39 +300,39 @@ import { postAuth } from '../api.js';
     }
   }
 
-  // ----- wire up -----
-  $('calPrev').addEventListener('click', () => shiftMonth(-1));
-  $('calNext').addEventListener('click', () => shiftMonth(1));
-  $('calToday').addEventListener('click', () => {
+  // ----- wire up (each handler is optional — missing elements are skipped) -----
+  const wire = (id, ev, fn) => { const el = $(id); if (el) el.addEventListener(ev, fn); };
+  wire('calPrev', 'click', () => shiftMonth(-1));
+  wire('calNext', 'click', () => shiftMonth(1));
+  wire('calToday', 'click', () => {
     viewYear = today.getFullYear();
     viewMonth = today.getMonth();
     selectedDate = todayStr;
     renderCalendar();
     renderDay();
   });
-  $('calGrid').addEventListener('click', (e) => {
+  wire('calGrid', 'click', (e) => {
     const cell = e.target.closest('.cal-cell');
     if (!cell || cell.dataset.muted) return;
     selectedDate = cell.dataset.date;
     renderCalendar();
     renderDay();
   });
-  $('newEntryBtn').addEventListener('click', () => openModal(selectedDate));
-  // calDayAdd only exists when calendar is the whole page — optional in the dashboard widget.
-  const _calDayAdd = $('calDayAdd');
-  if (_calDayAdd) _calDayAdd.addEventListener('click', () => openModal(selectedDate));
-  $('entryClose').addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  wire('newEntryBtn', 'click', () => openModal(selectedDate));
+  wire('calDayAdd', 'click', () => openModal(selectedDate));
+  wire('entryClose', 'click', closeModal);
+  if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    if (e.key === 'Escape' && modal && modal.classList.contains('active')) closeModal();
   });
-  $('refreshBtn').addEventListener('click', load);
-  $('adminLogout').addEventListener('click', () => {
+  wire('refreshBtn', 'click', load);
+  wire('adminLogout', 'click', () => {
     persistUser(null);
     location.replace('index.html');
   });
 
   // ----- boot -----
-  renderCalendar();
-  load();
+  // Guard the boot in case any single sub-component errors — never block the page.
+  try { renderCalendar(); } catch (err) { console.warn('Calendar render failed:', err); }
+  load().catch(err => console.warn('Calendar load failed:', err));
 })();
