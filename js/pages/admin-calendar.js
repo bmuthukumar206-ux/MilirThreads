@@ -310,7 +310,9 @@ import { postAuth } from '../api.js';
     renderDay();
   });
   $('newEntryBtn').addEventListener('click', () => openModal(selectedDate));
-  $('calDayAdd').addEventListener('click', () => openModal(selectedDate));
+  // calDayAdd only exists when calendar is the whole page — optional in the dashboard widget.
+  const _calDayAdd = $('calDayAdd');
+  if (_calDayAdd) _calDayAdd.addEventListener('click', () => openModal(selectedDate));
   $('entryClose').addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', (e) => {

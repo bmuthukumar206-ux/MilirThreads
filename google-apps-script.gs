@@ -151,6 +151,9 @@ function doGet(e) {
     if (action === 'calendar') {
       return jsonResponse(getCalendarEntries(ss));
     }
+    if (action === 'users') {
+      return jsonResponse(getAllUsers(ss, p.email));
+    }
     return jsonResponse({ status: 'ok', service: 'MilirThreads webhook' });
   } catch (err) {
     return jsonResponse({ status: 'error', error: err.toString() });
@@ -1405,6 +1408,32 @@ function addCalendarEntry(ss, data) {
     status: 'ok',
     entry: { id: id, date: date, time: time, title: title, category: category, notes: notes }
   };
+}
+
+/* ---------- ADMIN: ALL USERS (for the Users page) ---------- */
+function getAllUsers(ss, requesterEmail) {
+  if (!requireAdmin(ss, requesterEmail)) return { status: 'error', error: 'Not authorized' };
+  const sheet = ss.getSheetByName(USERS_SHEET);
+  if (!sheet) return { status: 'ok', users: [] };
+  ensureUsersColumns(sheet);
+  const values = sheet.getDataRange().getValues();
+  if (values.length < 2) return { status: 'ok', users: [] };
+  const headers = values[0];
+  const out = [];
+  for (let i = 1; i < values.length; i++) {
+    const row = rowToOrder(headers, values[i]);
+    out.push({
+      dateJoined: row['Date Joined'] || '',
+      name: row['Name'] || '',
+      email: row['Email'] || '',
+      phone: row['Phone'] || '',
+      role: (row['Role'] || 'user').toString(),
+      lastLogin: row['Last Login'] || '',
+      lastMethod: row['Last Method'] || ''
+    });
+  }
+  out.reverse();   // newest first
+  return { status: 'ok', users: out };
 }
 
 function deleteCalendarEntry(ss, data) {

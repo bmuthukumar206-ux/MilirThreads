@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calendar | MilirThreads Admin</title>
+<title>Transactions | MilirThreads Admin</title>
 <meta name="robots" content="noindex" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,9 +32,18 @@
       <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
       <span>Orders</span>
     </a>
-    <a href="admin-calendar.html" class="sidebar-link active">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-      <span>Calendar</span>
+    <span class="sidebar-section">Operations</span>
+    <a href="admin-transactions.html" class="sidebar-link active">
+      <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
+      <span>Transactions</span>
+    </a>
+    <a href="admin-shipping.html" class="sidebar-link">
+      <svg viewBox="0 0 24 24"><path d="M3 16V5h11v11"/><path d="M14 8h4l3 4v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+      <span>Shipping</span>
+    </a>
+    <a href="admin-users.html" class="sidebar-link">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Users</span>
     </a>
     <span class="sidebar-section">Account</span>
     <button type="button" class="sidebar-link sidebar-link-logout" id="adminLogout">
@@ -63,98 +72,62 @@
 </header>
 
 <main class="admin-main">
-
   <div class="admin-head">
     <div class="admin-head-text">
       <span class="admin-eyebrow">Admin</span>
-      <h1>Calendar</h1>
-      <p class="admin-head-sub">Schedule orders, events and product launches</p>
+      <h1>Transactions</h1>
+      <p class="admin-head-sub">Every payment recorded against your store, newest first</p>
     </div>
     <div class="admin-head-actions">
       <button class="btn btn-ghost" id="refreshBtn" type="button">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
         Refresh
       </button>
-      <button class="btn btn-primary" id="newEntryBtn" type="button">+ New entry</button>
     </div>
   </div>
 
-  <div class="cal-layout">
-    <section class="admin-card cal-grid-card">
-      <div class="cal-toolbar">
-        <div class="cal-nav">
-          <button class="cal-arrow" id="calPrev" type="button" aria-label="Previous month">&lsaquo;</button>
-          <strong id="calMonthLabel">—</strong>
-          <button class="cal-arrow" id="calNext" type="button" aria-label="Next month">&rsaquo;</button>
-        </div>
-        <button class="cal-today-btn" id="calToday" type="button">Today</button>
-        <div class="cal-legend">
-          <span class="cal-legend-item cat-order"><i></i>Order</span>
-          <span class="cal-legend-item cat-event"><i></i>Event</span>
-          <span class="cal-legend-item cat-launch"><i></i>Launch</span>
-        </div>
-      </div>
-      <div class="cal-weekdays">
-        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
-        <span>Fri</span><span>Sat</span><span>Sun</span>
-      </div>
-      <div class="cal-grid" id="calGrid"></div>
-    </section>
+  <section class="admin-grid stats-row stats-row-3">
+    <article class="stat-card" data-tone="accent">
+      <span class="stat-label">Total received</span>
+      <strong id="txTotalReceived">—</strong>
+      <span class="stat-sub" id="txTotalReceivedSub"></span>
+    </article>
+    <article class="stat-card" data-tone="ink">
+      <span class="stat-label">Total transactions</span>
+      <strong id="txCount">—</strong>
+      <span class="stat-sub" id="txCountSub"></span>
+    </article>
+    <article class="stat-card" data-tone="warm">
+      <span class="stat-label">Discount given</span>
+      <strong id="txDiscount">—</strong>
+      <span class="stat-sub">Across all promos</span>
+    </article>
+  </section>
 
-    <section class="admin-card cal-day-card">
-      <header class="cal-day-head">
-        <div>
-          <span class="admin-eyebrow">Schedule</span>
-          <h2 id="calDayTitle">Select a day</h2>
-          <span class="cal-day-count" id="calDayCount"></span>
-        </div>
-        <button class="btn btn-ghost cal-day-add" id="calDayAdd" type="button">+ Add</button>
-      </header>
-      <div class="cal-timeline" id="calTimeline">
-        <p class="cal-empty-day">Loading calendar…</p>
-      </div>
-    </section>
-  </div>
-
+  <section class="admin-card">
+    <header>
+      <h2>All transactions</h2>
+      <span class="admin-eyebrow"><span id="txListCount">0</span> records</span>
+    </header>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Product(s)</th>
+            <th class="num">Amount</th>
+            <th>Payment ID</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="txTableBody">
+          <tr><td colspan="6" class="orders-empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </main>
-
-<div class="modal-overlay" id="entryModal">
-  <div class="modal cal-modal">
-    <button class="modal-close" id="entryClose" type="button" aria-label="Close">&times;</button>
-    <span class="modal-eyebrow">Schedule</span>
-    <h3 id="entryModalTitle">New calendar entry</h3>
-    <form id="entryForm" class="cal-form" novalidate>
-      <div class="form-row">
-        <div class="field">
-          <label>Date</label>
-          <input type="date" name="date" required />
-        </div>
-        <div class="field">
-          <label>Time <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
-          <input type="time" name="time" />
-        </div>
-      </div>
-      <div class="field">
-        <label>Title</label>
-        <input type="text" name="title" required placeholder="e.g. Diwali collection launch" />
-      </div>
-      <div class="field">
-        <label>Category</label>
-        <select name="category">
-          <option value="order">Order</option>
-          <option value="event">Event</option>
-          <option value="launch">Launch</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Notes <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
-        <textarea name="notes" rows="3" placeholder="Any extra detail…"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary full" id="entrySubmit">Save entry</button>
-      <p class="form-note" id="entryNote"></p>
-    </form>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -192,6 +165,6 @@
     } catch (e) { /* ignore */ }
   })();
 </script>
-<script type="module" src="js/pages/admin-calendar.js"></script>
+<script type="module" src="js/pages/admin-transactions.js"></script>
 </body>
 </html>
