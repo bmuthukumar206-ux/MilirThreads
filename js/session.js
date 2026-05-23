@@ -18,7 +18,9 @@ try {
   if (!currentUser || currentUser.role !== 'admin') return;
   const path = (location.pathname || '').toLowerCase();
   const file = path.split('/').pop() || '';
-  if (file === 'admin.html' || file.startsWith('admin-')) return;
+  // Admin pages, plus order.html (so admins can open an order from the
+  // calendar / orders board to see its full pricing & bill).
+  if (file === 'admin.html' || file.startsWith('admin-') || file === 'order.html') return;
   location.replace('admin.html');
 })();
 

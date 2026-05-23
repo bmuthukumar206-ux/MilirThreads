@@ -6,7 +6,8 @@
 import { CONFIG } from '../config.js';
 import { currentUser, persistUser } from '../session.js';
 import { showToast } from '../toast.js';
-import { postAuth } from '../api.js';
+import { postAuth, fetchAllOrders } from '../api.js';
+import { parseOrderProducts } from '../catalog.js';
 
 (function () {
   // Auth gate — admin only
@@ -65,11 +66,17 @@ import { postAuth } from '../api.js';
   let viewMonth = today.getMonth();   // 0-11
   let selectedDate = todayStr;
   let entries = [];                   // [{id,date,time,title,category,notes}]
+  let orders = [];                    // every paid/recent order — surfaced on its day
   let backendReady = true;            // false → webhook can't serve the calendar yet
 
+  const fmtINR = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+
+  // Icon used for real orders that appear on the day timeline (cart).
+  const ORDER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l2.5 12.5a2 2 0 0 0 2 1.5h8a2 2 0 0 0 2-1.5L22 7H6"/></svg>';
+
   // ----- load -----
-  // Always renders the calendar; never throws. If the webhook can't serve
-  // calendar data yet, the page still works and shows a calm inline hint.
+  // Always renders the calendar; never throws. Pulls calendar entries AND
+  // every order in parallel so a day click can surface that day's orders.
   async function load() {
     backendReady = true;
     if (CONFIG.SHEETS_WEBHOOK.includes('YOUR_DEPLOYMENT_ID')) {
@@ -79,15 +86,18 @@ import { postAuth } from '../api.js';
       return;
     }
     try {
-      const res = await fetch(`${CONFIG.SHEETS_WEBHOOK}?action=calendar&_t=${Date.now()}`);
-      const data = await res.json();
-      if (data && data.status === 'ok' && Array.isArray(data.entries)) {
-        entries = data.entries;
+      const [calRes, ordersRes] = await Promise.all([
+        fetch(`${CONFIG.SHEETS_WEBHOOK}?action=calendar&_t=${Date.now()}`).then(r => r.json()),
+        fetchAllOrders(currentUser)
+      ]);
+      if (calRes && calRes.status === 'ok' && Array.isArray(calRes.entries)) {
+        entries = calRes.entries;
       } else {
         // Reached the webhook, but this deployment doesn't know the
         // 'calendar' action — it needs to be redeployed as a new version.
         backendReady = false;
       }
+      orders = (ordersRes && Array.isArray(ordersRes.orders)) ? ordersRes.orders : [];
     } catch (err) {
       backendReady = false;
     }
@@ -144,11 +154,21 @@ import { postAuth } from '../api.js';
     if (grid) grid.innerHTML = html;
   }
 
-  // ----- render: day timeline -----
+  // ----- render: day timeline (calendar entries + real orders) -----
   function renderDay() {
-    const list = entries
-      .filter(e => e.date === selectedDate)
-      .sort((a, b) => (a.time || '~').localeCompare(b.time || '~'));
+    // Calendar entries for the selected day.
+    const dayEntries = entries.filter(e => e.date === selectedDate);
+
+    // Orders placed on the selected day, with derived time + delivery bucket.
+    const dayOrders = orders
+      .filter(o => (o['Date'] || '').toString().slice(0, 10) === selectedDate)
+      .map(o => {
+        const ds = (o['Delivery Status'] || 'received').toString().toLowerCase().trim();
+        const moved = ds === 'out_for_delivery' || ds === 'delivered';
+        return { raw: o, time: (o['Date'] || '').toString().slice(11, 16), deliveryStatus: ds, moved };
+      });
+    const movedCount = dayOrders.filter(o => o.moved).length;
+    const pendingCount = dayOrders.length - movedCount;
 
     // Heading — "Today · Friday 6 Feb" style.
     const d = parseYmd(selectedDate);
@@ -158,8 +178,16 @@ import { postAuth } from '../api.js';
     if (titleEl) titleEl.textContent = selectedDate === todayStr ? `Today · ${dayText}` : dayText;
     const countEl = $('calDayCount');
     if (countEl) {
-      countEl.textContent = !backendReady ? ''
-        : (list.length ? `${list.length} scheduled` : 'Nothing scheduled');
+      if (!backendReady) {
+        countEl.textContent = '';
+      } else {
+        const parts = [];
+        if (dayEntries.length) parts.push(`${dayEntries.length} scheduled`);
+        if (dayOrders.length) parts.push(`${dayOrders.length} order${dayOrders.length === 1 ? '' : 's'}`);
+        if (movedCount) parts.push(`${movedCount} moved`);
+        if (pendingCount) parts.push(`${pendingCount} pending`);
+        countEl.textContent = parts.length ? parts.join(' · ') : 'Nothing scheduled';
+      }
     }
 
     const wrap = $('calTimeline');
@@ -173,30 +201,79 @@ import { postAuth } from '../api.js';
         </div>`;
       return;
     }
-    if (!list.length) {
-      wrap.innerHTML = '<p class="cal-empty-day">Nothing scheduled for this day.<br>Use <strong>+ Add</strong> to plan something.</p>';
+    if (!dayEntries.length && !dayOrders.length) {
+      wrap.innerHTML = '<p class="cal-empty-day">Nothing scheduled for this day.<br>Use <strong>+ Add</strong> to plan something — orders placed on this day will also appear here.</p>';
       return;
     }
-    wrap.innerHTML = list.map(e => {
-      const cat = CATEGORIES.indexOf(e.category) >= 0 ? e.category : 'event';
-      return `
-        <article class="cal-event cat-${cat}">
-          <span class="cal-event-icon">${CAT_ICONS[cat]}</span>
-          <div class="cal-event-body">
-            <div class="cal-event-top">
-              <strong>${esc(e.title)}</strong>
-              <span class="cal-event-time">${e.time ? esc(fmtTime(e.time)) : 'All day'}</span>
-            </div>
-            <span class="cal-event-cat">${esc(catLabel(cat))}</span>
-            ${e.notes ? `<p>${esc(e.notes)}</p>` : ''}
-          </div>
-          <button class="cal-event-del" type="button" data-id="${esc(e.id)}" aria-label="Delete">&times;</button>
-        </article>`;
-    }).join('');
+
+    // Mix calendar entries + orders, sorted by time-of-day.
+    const items = [];
+    dayEntries.forEach(e => items.push({ sortKey: e.time || '~', html: eventCardHtml(e) }));
+    dayOrders.forEach((o, idx) => items.push({ sortKey: o.time || '~', html: orderCardHtml(o, idx) }));
+    items.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+    wrap.innerHTML = items.map(it => it.html).join('');
 
     wrap.querySelectorAll('.cal-event-del').forEach(btn => {
-      btn.addEventListener('click', () => deleteEntry(btn.dataset.id));
+      btn.addEventListener('click', (e) => { e.stopPropagation(); deleteEntry(btn.dataset.id); });
     });
+    wrap.querySelectorAll('.cal-event-order').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = Number(card.dataset.orderIdx);
+        const order = dayOrders[idx] && dayOrders[idx].raw;
+        if (!order) return;
+        try { sessionStorage.setItem('milir_order', JSON.stringify(order)); }
+        catch (e) { /* sessionStorage full / disabled */ }
+        location.href = 'order.html';
+      });
+    });
+  }
+
+  function eventCardHtml(e) {
+    const cat = CATEGORIES.indexOf(e.category) >= 0 ? e.category : 'event';
+    return `
+      <article class="cal-event cat-${cat}">
+        <span class="cal-event-icon">${CAT_ICONS[cat]}</span>
+        <div class="cal-event-body">
+          <div class="cal-event-top">
+            <strong>${esc(e.title)}</strong>
+            <span class="cal-event-time">${e.time ? esc(fmtTime(e.time)) : 'All day'}</span>
+          </div>
+          <span class="cal-event-cat">${esc(catLabel(cat))}</span>
+          ${e.notes ? `<p>${esc(e.notes)}</p>` : ''}
+        </div>
+        <button class="cal-event-del" type="button" data-id="${esc(e.id)}" aria-label="Delete">&times;</button>
+      </article>`;
+  }
+
+  function orderCardHtml(o, idx) {
+    const raw = o.raw;
+    const items = parseOrderProducts(raw['Which Product']);
+    const title = items.length
+      ? items.map(it => esc(it.name) + (it.qty > 1 ? ` ×${it.qty}` : '')).join(', ')
+      : esc(raw['Which Product'] || 'Order');
+    const dsCss = o.deliveryStatus === 'received' ? 'pending'
+                : o.deliveryStatus === 'out_for_delivery' ? 'out'
+                : o.deliveryStatus === 'delivered' ? 'delivered' : 'pending';
+    const dsLabel = o.deliveryStatus === 'received' ? 'Pending pickup'
+                  : o.deliveryStatus === 'out_for_delivery' ? 'Out for delivery'
+                  : o.deliveryStatus === 'delivered' ? 'Delivered' : 'Pending';
+    const timeText = o.time ? esc(fmtTime(o.time)) : 'No time';
+    return `
+      <article class="cal-event cal-event-order" data-order-idx="${idx}" role="button" tabindex="0">
+        <span class="cal-event-icon">${ORDER_ICON}</span>
+        <div class="cal-event-body">
+          <div class="cal-event-top">
+            <strong>${title}</strong>
+            <span class="cal-event-time">${timeText}</span>
+          </div>
+          <span class="cal-event-cat">Order · ${esc(raw['Name'] || '—')}</span>
+          <div class="cal-order-line">
+            <span class="cal-order-amt">${fmtINR(raw['Received Amount'])}</span>
+            <span class="cal-order-pill ds-${dsCss}">${dsLabel}</span>
+          </div>
+        </div>
+        <span class="cal-event-arrow" aria-hidden="true">&rsaquo;</span>
+      </article>`;
   }
 
   // ----- month navigation -----
